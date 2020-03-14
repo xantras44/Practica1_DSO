@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include "my_io.h"
 
-#include "mythread.h"
+//#include "mythread.h"
 #include "interrupt.h"
 
 #include "queue.h"
