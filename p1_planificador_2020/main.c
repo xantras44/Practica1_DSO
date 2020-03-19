@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ucontext.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "mythread.h"
 
@@ -66,13 +67,24 @@ int main(int argc, char *argv[])
     for (b=0; b<30000000; ++b);
   }	
 
-  if((a =  mythread_create(fun1,HIGH_PRIORITY,1)) == -1){
-    printf("thread failed to initialize\n");
-    exit(-1);
-  }
-  if((b =  mythread_create(fun1,HIGH_PRIORITY, 1)) == -1){
-    printf("thread failed to initialize\n");
-    exit(-1);
+  if (argc > 1){
+    // TEST1
+    if ((strcmp(argv[1], "test1")) == 0){
+      /*if((a =  mythread_create(fun1,HIGH_PRIORITY,1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((b =  mythread_create(fun1,HIGH_PRIORITY, 1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }*/
+    } 
+    // TEST2
+    else if ((strcmp(argv[1], "test2")) == 0){
+      
+    } else {
+      printf("El paramentro introducido no es correcto");
+    }
   }
 
   mythread_exit();	
