@@ -34,40 +34,41 @@ int main(int argc, char *argv[])
 {
   int j,k,l,m,a,b,f;
 
-
-  mythread_setpriority(LOW_PRIORITY);
-  if((f = mythread_create(function_thread,HIGH_PRIORITY,2)) == -1){
-      printf("thread failed to initialize\n");
-      exit(-1);
-  }
-  
-  read_disk();
-  read_disk();
-
-  if((j = mythread_create(function_thread,HIGH_PRIORITY, 2)) == -1){
-    printf("thread failed to initialize\n");
-    exit(-1);
-  }
-  if((k = mythread_create(function_thread,HIGH_PRIORITY, 2)) == -1){
-    printf("thread failed to initialize\n");
-    exit(-1);
-  }  
-  if((l = mythread_create(function_thread,LOW_PRIORITY, 2)) == -1){
-    printf("thread failed to initialize\n");
-    exit(-1);
-  }
-
-  if((m = mythread_create(function_thread,HIGH_PRIORITY, 1)) == -1){
-    printf("thread failed to initialize\n");
-    exit(-1);
-  }
-      
-     
-  for (a=0; a<10; ++a) {
-    for (b=0; b<30000000; ++b);
-  }	
-
   if (argc > 1){
+    //TEST0 o por defecto
+    if ((strcmp(argv[1], "test0")) == 0){
+      mythread_setpriority(LOW_PRIORITY);
+      if((f = mythread_create(function_thread,HIGH_PRIORITY,2)) == -1){
+          printf("thread failed to initialize\n");
+          exit(-1);
+      }
+      
+      read_disk();
+      read_disk();
+
+      if((j = mythread_create(function_thread,HIGH_PRIORITY, 2)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((k = mythread_create(function_thread,HIGH_PRIORITY, 2)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }  
+      if((l = mythread_create(function_thread,LOW_PRIORITY, 2)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+
+      if((m = mythread_create(function_thread,HIGH_PRIORITY, 1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+          
+        
+      for (a=0; a<10; ++a) {
+        for (b=0; b<30000000; ++b);
+      }	
+    }
     // TEST1
     if ((strcmp(argv[1], "test1")) == 0){
       /*if((a =  mythread_create(fun1,HIGH_PRIORITY,1)) == -1){
@@ -82,7 +83,9 @@ int main(int argc, char *argv[])
     // TEST2
     else if ((strcmp(argv[1], "test2")) == 0){
       
-    } else {
+    } else if ((strcmp(argv[1], "test3")) == 0){
+      
+    }else {
       printf("El paramentro introducido no es correcto");
     }
   }

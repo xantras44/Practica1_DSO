@@ -1,0 +1,18 @@
+#!/bin/bash
+
+make
+
+for ((i=0 ; i<=2; i++))
+  do
+    if [[ $i -eq 0 ]];
+    then
+        echo "------------------------"
+        echo "Pruebas para Round Robin"
+    fi
+    echo "------------------------"
+    echo "Test $i"
+    echo "------------------------"
+    echo ""
+    ./main test$i
+    echo ""
+  done
