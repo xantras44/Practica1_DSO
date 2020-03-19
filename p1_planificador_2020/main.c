@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   int j,k,l,m,a,b,f;
 
   if (argc > 1){
-    //TEST0 o por defecto
+    //test0 o por defecto
     if ((strcmp(argv[1], "test0")) == 0){
       mythread_setpriority(LOW_PRIORITY);
       if((f = mythread_create(function_thread,HIGH_PRIORITY,2)) == -1){
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         for (b=0; b<30000000; ++b);
       }	
     }
-    // TEST1
+    // test1
     if ((strcmp(argv[1], "test1")) == 0){
       /*if((a =  mythread_create(fun1,HIGH_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
@@ -80,10 +80,36 @@ int main(int argc, char *argv[])
         exit(-1);
       }*/
     } 
-    // TEST2
+    // test2
     else if ((strcmp(argv[1], "test2")) == 0){
       
-    } else if ((strcmp(argv[1], "test3")) == 0){
+    }
+    // test3 
+    else if ((strcmp(argv[1], "test3")) == 0){
+      
+    } 
+    // test4
+    else if ((strcmp(argv[1], "test4")) == 0){
+      
+    } 
+    // test5
+    else if ((strcmp(argv[1], "test5")) == 0){
+      
+    } 
+    // test6
+    else if ((strcmp(argv[1], "test6")) == 0){
+      
+    } 
+    // test7
+    else if ((strcmp(argv[1], "test7")) == 0){
+      
+    } 
+    // test8
+    else if ((strcmp(argv[1], "test8")) == 0){
+      
+    } 
+    // test9
+    else if ((strcmp(argv[1], "test9")) == 0){
       
     }else {
       printf("El paramentro introducido no es correcto");

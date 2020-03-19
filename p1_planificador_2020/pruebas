@@ -2,13 +2,26 @@
 
 make
 
-for ((i=0 ; i<=2; i++))
+for ((i=0 ; i<=9; i++))
   do
     if [[ $i -eq 0 ]];
     then
-        echo "------------------------"
-        echo "Pruebas para Round Robin"
+        echo "-------------------------------------------"
+        echo "Prueba por defecto"
     fi
+
+    if [[ $i -eq 1 ]];
+    then
+        echo "-------------------------------------------"
+        echo "Pruebas para RR.c"
+    fi
+
+    if [[ $i -eq 5 ]];
+    then
+        echo "-------------------------------------------"
+        echo "Pruebas para RRS.c"
+    fi
+
     echo "------------------------"
     echo "Test $i"
     echo "------------------------"
