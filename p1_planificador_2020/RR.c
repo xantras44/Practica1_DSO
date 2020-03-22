@@ -15,6 +15,7 @@ void activator();
 void timer_interrupt(int sig);
 void disk_interrupt(int sig);
 
+struct queue *t_queue;
 
 /* Array of state thread control blocks: the process allows a maximum of N threads */
 static TCB t_state[N];
@@ -89,7 +90,7 @@ void init_mythreadlib()
     t_state[i].state = FREE;
   }
 
-  struct queue *t_queue = queue_new();
+  t_queue = queue_new();
 
   t_state[0].tid = 0;
   running = &t_state[0];
