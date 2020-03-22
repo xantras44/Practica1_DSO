@@ -89,7 +89,7 @@ void init_mythreadlib()
     t_state[i].state = FREE;
   }
 
-  t_queue = queue_new();
+  struct queue *t_queue = queue_new();
 
   t_state[0].tid = 0;
   running = &t_state[0];
