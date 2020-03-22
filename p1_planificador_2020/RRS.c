@@ -90,9 +90,6 @@ void init_mythreadlib()
     t_state[i].state = FREE;
   }
 
-  struct queue *t_queue = queue_new();
-  struct queue *t_queue_high = queue_new();
-
 
   t_state[0].tid = 0;
   running = &t_state[0];
@@ -102,6 +99,8 @@ void init_mythreadlib()
   init_interrupt();
 }
 
+struct queue *t_queue = queue_new();
+struct queue *t_queue_high = queue_new();
 
 /* Create and intialize a new thread with body fun_addr and one integer argument */
 int mythread_create (void (*fun_addr)(),int priority,int seconds)
@@ -195,6 +194,7 @@ void mythread_timeout(int tid) {
     free(t_state[tid].run_env.uc_stack.ss_sp);
 
     TCB* next = scheduler();
+    printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, next->tid);
     next->state = RUNNING;
     activator(next);
 }
@@ -247,6 +247,7 @@ TCB* scheduler()
   	  return next;
     }
   }
+  printf("*** FINISH\n");
   printf("mythread_free: No thread in the system\nExiting...\n");
   exit(1);
 }
@@ -267,7 +268,7 @@ void timer_interrupt(int sig)
   if (running->priority == HIGH_PRIORITY){
     // Si hay otro proceso de prioridad alta mas corto listo.
     if (!queue_empty(t_queue_high)) {
-      if (t_queue_high.Peek()->remaining_ticks < running->remaining_ticks){
+      if (t_queue_high[0]->remaining_ticks < running->remaining_ticks){
         running->state = INIT; //listo para ejecutar
 
         disable_interrupt();
@@ -299,7 +300,7 @@ void timer_interrupt(int sig)
 
       TCB* prev = running; //hilo que ha estado corriendo hasta este momento
       running = scheduler(); //llamada a la funcion scheduler
-      printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
+      printf("*** THREAD %d PREEMTED : SETCONTEXT OF %d\n", prev->tid, running->tid);
       running->state = RUNNING;
       activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
     }
@@ -330,11 +331,11 @@ void timer_interrupt(int sig)
 /* Activator */
 void activator(TCB* next)
 {
-  if(swapcontext (&(prev->run_env), &(running->run_env)) == -1){
+  if(swapcontext (&(next->run_env), &(running->run_env)) == -1){
     setcontext (&(next->run_env));
     printf("mythread_free: After setcontext, should never get here!!...\n");
   }else{
-    swapcontext(&(prev->run_env), &(running->run_env));
+    swapcontext(&(next->run_env), &(running->run_env));
   }
   /*setcontext (&(next->run_env));
   printf("mythread_free: After setcontext, should never get here!!...\n");*/

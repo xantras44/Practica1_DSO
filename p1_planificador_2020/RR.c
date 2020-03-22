@@ -264,10 +264,10 @@ void timer_interrupt(int sig)
 /* Activator */
 void activator(TCB* next)
 {
-    if(swapcontext (&(prev->run_env), &(running->run_env)) == -1){
+    if(swapcontext (&(next->run_env), &(running->run_env)) == -1){
       setcontext (&(next->run_env));
       printf("mythread_free: After setcontext, should never get here!!...\n");
     }else{
-      swapcontext(&(prev->run_env), &(running->run_env));
+      swapcontext(&(next->run_env), &(running->run_env));
     }
 }
