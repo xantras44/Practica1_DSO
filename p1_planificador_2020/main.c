@@ -111,8 +111,21 @@ int main(int argc, char *argv[])
     // test9
     else if ((strcmp(argv[1], "test9")) == 0){
       
+    }
+    // test10
+    else if ((strcmp(argv[1], "test9")) == 0){
+      
+    }// test11
+    else if ((strcmp(argv[1], "test9")) == 0){
+      
+    }// test12
+    else if ((strcmp(argv[1], "test9")) == 0){
+      
+    }// test13
+    else if ((strcmp(argv[1], "test9")) == 0){
+      
     }else {
-      printf("El paramentro introducido no es correcto");
+      printf("El paramentro introducido no es correcto\n");
     }
   }
 
