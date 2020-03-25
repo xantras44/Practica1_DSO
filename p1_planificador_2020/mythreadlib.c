@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <ucontext.h>
 #include <unistd.h>
-#include "my_io.h"
 
 #include "mythread.h"
 #include "interrupt.h"
@@ -16,6 +15,7 @@ void activator();
 void timer_interrupt(int sig);
 void disk_interrupt(int sig);
 
+struct queue *t_queue;
 
 /* Array of state thread control blocks: the process allows a maximum of N threads */
 static TCB t_state[N];
@@ -38,9 +38,10 @@ static void idle_function()
 void function_thread(int sec)
 {
     //time_t end = time(NULL) + sec;
+    printf("hola");
     while(running->remaining_ticks)
     {
-      //do something
+      printf("Hola%d\n", running->remaining_ticks);
     }
     mythread_exit();
 }
@@ -90,6 +91,8 @@ void init_mythreadlib()
     t_state[i].state = FREE;
   }
 
+  t_queue = queue_new();
+
   t_state[0].tid = 0;
   running = &t_state[0];
 
@@ -116,7 +119,7 @@ int mythread_create (void (*fun_addr)(),int priority,int seconds)
     perror("*** ERROR: getcontext in my_thread_create");
     exit(-1);
   }
-
+  t_state[i].ticks = QUANTUM_TICKS;
   t_state[i].state = INIT;
   t_state[i].priority = priority;
   t_state[i].function = fun_addr;
@@ -134,6 +137,15 @@ int mythread_create (void (*fun_addr)(),int priority,int seconds)
   t_state[i].run_env.uc_stack.ss_size = STACKSIZE;
   t_state[i].run_env.uc_stack.ss_flags = 0;
   makecontext(&t_state[i].run_env, fun_addr,2,seconds);
+
+  /*Encola el nuevo thread*/
+  TCB *t = &t_state[i];
+  disable_interrupt();
+  disable_disk_interrupt();
+  enqueue(t_queue, t);
+  enable_disk_interrupt();
+  enable_interrupt();
+
 
   return i;
 }
@@ -162,6 +174,8 @@ void mythread_exit() {
   free(t_state[tid].run_env.uc_stack.ss_sp);
 
   TCB* next = scheduler();
+  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, next->tid);
+  next->state = RUNNING;
   activator(next);
 }
 
@@ -173,6 +187,7 @@ void mythread_timeout(int tid) {
     free(t_state[tid].run_env.uc_stack.ss_sp);
 
     TCB* next = scheduler();
+    next->state = RUNNING;
     activator(next);
 }
 
@@ -202,18 +217,19 @@ int mythread_gettid(){
 }
 
 
-/* SJF para alta prioridad, RR para baja*/
+/* Planificador RR*/
 
 TCB* scheduler()
 {
-  int i;
-  for(i=0; i<N; i++)
-  {
-    if (t_state[i].state == INIT)
-    {
-      current = i;
-	    return &t_state[i];
-    }
+  TCB* next; //almacena el proximo hilo a ejecutar
+  if (!queue_empty(t_queue)){ //si la cola no esta vacia se desencola
+	  disable_interrupt(); //para proteger el acceso a la cola
+    disable_disk_interrupt();
+    next = dequeue(t_queue); //proximo hilo a correr
+	  enable_disk_interrupt();
+    enable_interrupt();
+	  current = next->tid;
+	  return next;
   }
   printf("mythread_free: No thread in the system\nExiting...\n");
   exit(1);
@@ -223,13 +239,40 @@ TCB* scheduler()
 /* Timer interrupt */
 void timer_interrupt(int sig)
 {
+  running->ticks = running->ticks-1; //restar un tick al hilo en ejcucion
 
+  running->remaining_ticks = running->remaining_ticks - 1;
+  // Si el proceso ejecutándose ya ha terminado de ejecutarse, se llama a mythread_timeout.
+  if (running->remaining_ticks == 0){
+    mythread_timeout(running->tid);
+  }
 
-}
+  if (running->ticks <= 0){ //si los ticks han llegado a 0 se restablecen los ticks y se encola de nuevo el hilo
+    running->state = INIT; //listo para ejecutar
+    running->ticks = QUANTUM_TICKS; //reinicia ticks
+
+    disable_interrupt();
+    disable_disk_interrupt();
+    enqueue(t_queue, running); //encola en lista de listos
+    enable_disk_interrupt();
+    enable_interrupt();
+
+	  TCB* prev = running; //hilo que ha estado corriendo hasta este momento
+	  running = scheduler(); //llamada a la funcion scheduler
+	  printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
+	  running->state = RUNNING;
+    activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
+	  }
+  }
+
 
 /* Activator */
 void activator(TCB* next)
 {
-  setcontext (&(next->run_env));
-  printf("mythread_free: After setcontext, should never get here!!...\n");
+    if(swapcontext (&(next->run_env), &(running->run_env)) == -1){
+      setcontext (&(next->run_env));
+      printf("mythread_free: After setcontext, should never get here!!...\n");
+    }else{
+      swapcontext(&(next->run_env), &(running->run_env));
+    }
 }

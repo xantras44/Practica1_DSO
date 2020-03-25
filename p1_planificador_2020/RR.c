@@ -38,9 +38,10 @@ static void idle_function()
 void function_thread(int sec)
 {
     //time_t end = time(NULL) + sec;
+    printf("hola");
     while(running->remaining_ticks)
     {
-      //do something
+      printf("Hola%d\n", running->remaining_ticks);
     }
     mythread_exit();
 }
@@ -253,7 +254,7 @@ void timer_interrupt(int sig)
     disable_interrupt();
     disable_disk_interrupt();
     enqueue(t_queue, running); //encola en lista de listos
-    disable_disk_interrupt();
+    enable_disk_interrupt();
     enable_interrupt();
 
 	  TCB* prev = running; //hilo que ha estado corriendo hasta este momento
