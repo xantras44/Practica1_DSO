@@ -2,7 +2,7 @@
 
 make
 
-for ((i=0 ; i<=9; i++))
+for ((i=0 ; i<=13; i++))
   do
     if [[ $i -eq 0 ]];
     then
@@ -17,6 +17,12 @@ for ((i=0 ; i<=9; i++))
     fi
 
     if [[ $i -eq 5 ]];
+    then
+        echo "-------------------------------------------"
+        echo "Pruebas para RRS.c"
+    fi
+
+    if [[ $i -eq 10 ]];
     then
         echo "-------------------------------------------"
         echo "Pruebas para RRS.c"
