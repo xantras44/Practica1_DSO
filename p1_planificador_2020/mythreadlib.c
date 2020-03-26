@@ -38,10 +38,9 @@ static void idle_function()
 void function_thread(int sec)
 {
     //time_t end = time(NULL) + sec;
-    printf("hola");
     while(running->remaining_ticks)
     {
-      printf("Hola%d\n", running->remaining_ticks);
+      printf("Hola %d\n", running->remaining_ticks);
     }
     mythread_exit();
 }
