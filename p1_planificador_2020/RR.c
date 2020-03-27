@@ -22,6 +22,10 @@ static TCB t_state[N];
 
 /* Current running thread */
 static TCB* running;
+
+/* Previous thread running*/
+static TCB* prev;
+
 static int current = 0;
 
 /* Variable indicating if the library is initialized (init == 1) or not (init == 0) */
@@ -38,10 +42,10 @@ static void idle_function()
 void function_thread(int sec)
 {
     //time_t end = time(NULL) + sec;
-    printf("hola");
+    //printf("hola");
     while(running->remaining_ticks)
     {
-      printf("Hola%d\n", running->remaining_ticks);
+      //printf("Hola%d\n", running->remaining_ticks);
     }
     mythread_exit();
 }
@@ -172,11 +176,11 @@ void mythread_exit() {
   printf("*** THREAD %d FINISHED\n", tid);
   t_state[tid].state = FREE;
   free(t_state[tid].run_env.uc_stack.ss_sp);
-
-  TCB* next = scheduler();
-  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, next->tid);
-  next->state = RUNNING;
-  activator(next);
+  prev = running;         //Guardo el anterior hilo ejecutado en prev
+  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
+  //next = scheduler();
+  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, running->tid);
+  activator(running);     //Llamo al activador para realizar el setcontext
 }
 
 
@@ -186,9 +190,9 @@ void mythread_timeout(int tid) {
     t_state[tid].state = FREE;
     free(t_state[tid].run_env.uc_stack.ss_sp);
 
-    TCB* next = scheduler();
-    next->state = RUNNING;
-    activator(next);
+    prev = running;          //Guardamos el anterior hilo ejecutado en prev
+    running = scheduler();   //Llamamos al scheduler para que me de el hilo a ejecutar
+    activator(running);      //Llamamos al activador para realizar el setcontext
 }
 
 
@@ -240,10 +244,9 @@ TCB* scheduler()
 void timer_interrupt(int sig)
 {
   running->ticks = running->ticks-1; //restar un tick al hilo en ejcucion
-
-  running->remaining_ticks = running->remaining_ticks - 1;
+  running->remaining_ticks = running->remaining_ticks - 1;  //restar 1 al tiempo que le queda al proceso
   // Si el proceso ejecutándose ya ha terminado de ejecutarse, se llama a mythread_timeout.
-  if (running->remaining_ticks == 0){
+  if (running->remaining_ticks < 0){
     mythread_timeout(running->tid);
   }
 
@@ -257,22 +260,24 @@ void timer_interrupt(int sig)
     enable_disk_interrupt();
     enable_interrupt();
 
-	  TCB* prev = running; //hilo que ha estado corriendo hasta este momento
-	  running = scheduler(); //llamada a la funcion scheduler
+	  prev = running; //hilo que ha estado corriendo hasta este momento
+	  running = scheduler(); //llamada a la funcion scheduler para obtener el hilo a ejecutar
+    if (prev != running){
 	  printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
-	  running->state = RUNNING;
-    activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
+    
+    activator(running); //llamada a la funcion activator para el cambio de contexto
+    }
 	  }
-  }
+  
 }
 
 /* Activator */
 void activator(TCB* next)
 {
-    if(swapcontext (&(next->run_env), &(running->run_env)) == -1){
-      setcontext (&(next->run_env));
+    if(prev->state == FREE){       //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
+      setcontext (&(next->run_env));  //hago un setcontext y pongo el contexto del nuevo hilo
       printf("mythread_free: After setcontext, should never get here!!...\n");
     }else{
-      swapcontext(&(next->run_env), &(running->run_env));
+      swapcontext(&(prev->run_env), &(next->run_env));  //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
     }
 }
