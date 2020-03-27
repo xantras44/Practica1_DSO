@@ -171,15 +171,18 @@ void disk_interrupt(int sig)
 
 /* Free terminated thread and exits */
 void mythread_exit() {
-  int tid = mythread_gettid();
+  //int tid = mythread_gettid();
+                                          /*Hemos decidido no hacer uso de la función gettid en este caso, pues nos resulta
+                                        facil usar el tid del hilo que sabemos que va  asalir de ejecucion*/
 
-  printf("*** THREAD %d FINISHED\n", tid);
-  t_state[tid].state = FREE;
-  free(t_state[tid].run_env.uc_stack.ss_sp);
   prev = running;         //Guardo el anterior hilo ejecutado en prev
+  printf("*** THREAD %d FINISHED\n", prev->tid);
   running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
-  //next = scheduler();
-  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, running->tid);
+
+  t_state[prev->tid].state = FREE;
+  free(t_state[prev->tid].run_env.uc_stack.ss_sp);
+  
+  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", prev->tid, running->tid);
   activator(running);     //Llamo al activador para realizar el setcontext
 }
 
@@ -235,7 +238,7 @@ TCB* scheduler()
 	  current = next->tid;
 	  return next;
   }
-  printf("mythread_free: No thread in the system\nExiting...\n");
+  printf("*** FINISH\n");
   exit(1);
 }
 
@@ -266,8 +269,8 @@ void timer_interrupt(int sig)
 	  printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
     
     activator(running); //llamada a la funcion activator para el cambio de contexto
-    }
-	  }
+          }
+	    }
   
 }
 

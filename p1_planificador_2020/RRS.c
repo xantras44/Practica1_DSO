@@ -24,6 +24,10 @@ static TCB t_state[N];
 
 /* Current running thread */
 static TCB* running;
+
+/* Previous thread running*/
+static TCB* prev;
+
 static int current = 0;
 
 /* Variable indicating if the library is initialized (init == 1) or not (init == 0) */
@@ -147,42 +151,42 @@ int mythread_create (void (*fun_addr)(),int priority,int seconds)
     enable_disk_interrupt();
     enable_interrupt();
   }
-  else {
+  else if (t->priority == HIGH_PRIORITY && running->priority == LOW_PRIORITY){
+    running->state = INIT; //listo para ejecutar
+    running->ticks = QUANTUM_TICKS;  //Reestablezco los ticks
     disable_interrupt();
     disable_disk_interrupt();
-    sorted_enqueue(t_queue, t, t->remaining_ticks);
+    enqueue(t_queue, running);
     enable_disk_interrupt();
     enable_interrupt();
-    if (running->priority == HIGH_PRIORITY && t->remaining_ticks < running->remaining_ticks){
+    prev = running;
+    running = t;
+    printf("*** THREAD %d PREEMTED: SETCONTEXT  OF %d\n", prev->tid, running->tid);
+    activator(running);
+  }
+  else if (running->priority == HIGH_PRIORITY && t->priority == HIGH_PRIORITY && t->remaining_ticks < running->remaining_ticks){
       running->state = INIT; //listo para ejecutar
 
       disable_interrupt();
       disable_disk_interrupt();
       sorted_enqueue(t_queue_high, running, running->remaining_ticks); //encola en lista de listos
-      disable_disk_interrupt();
+      enable_disk_interrupt();
       enable_interrupt();
 
-      TCB* prev = running; //hilo que ha estado corriendo hasta este momento
-      running = scheduler(); //llamada a la funcion scheduler
+      prev = running; //hilo que ha estado corriendo hasta este momento
+      running = t; //llamada a la funcion scheduler
       printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
-      running->state = RUNNING;
-      activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
+      activator(running); //llamada a la funcion activator 
     }
-  }
-  if (t->priority == HIGH_PRIORITY && running->priority == HIGH_PRIORITY && t->remaining_ticks < running->remaining_ticks){
-    running->state = INIT; //listo para ejecutar
+  
+else if (t->priority == HIGH_PRIORITY && running->priority == HIGH_PRIORITY && t->remaining_ticks >= running->remaining_ticks){
+    t->state = INIT; //listo para ejecutar
 
     disable_interrupt();
     disable_disk_interrupt();
-    sorted_enqueue(t_queue_high, running, running->remaining_ticks); //encola en lista de listos
-    disable_disk_interrupt();
+    sorted_enqueue(t_queue_high, t, t->remaining_ticks); //encola en lista de listos
+    enable_disk_interrupt();
     enable_interrupt();
-
-    TCB* prev = running; //hilo que ha estado corriendo hasta este momento
-    running = scheduler(); //llamada a la funcion scheduler
-    printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
-    running->state = RUNNING;
-    activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
   }
 
   return i;
@@ -205,16 +209,18 @@ void disk_interrupt(int sig)
 
 /* Free terminated thread and exits */
 void mythread_exit() {
-  int tid = mythread_gettid();
+  //int tid = mythread_gettid();     
+                                        /*Hemos decidido no hacer uso de la función gettid en este caso, pues nos resulta
+                                        facil usar el tid del hilo que sabemos que va  asalir de ejecucion*/
 
-  printf("*** THREAD %d FINISHED\n", tid);
-  t_state[tid].state = FREE;
-  free(t_state[tid].run_env.uc_stack.ss_sp);
-
-  TCB* next = scheduler();
-  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, next->tid);
-  next->state = RUNNING;
-  activator(next);
+  prev = running;         //Guardo el anterior hilo ejecutado en prev
+  printf("*** THREAD %d FINISHED\n", prev->tid);
+  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
+  t_state[prev->tid].state = FREE;
+  free(t_state[prev->tid].run_env.uc_stack.ss_sp);
+  
+  printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", prev->tid, running->tid);
+  activator(running);     //Llamo al activador para realizar el setcontext
 }
 
 
@@ -224,10 +230,9 @@ void mythread_timeout(int tid) {
     t_state[tid].state = FREE;
     free(t_state[tid].run_env.uc_stack.ss_sp);
 
-    TCB* next = scheduler();
-    printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", tid, next->tid);
-    next->state = RUNNING;
-    activator(next);
+    prev = running;          //Guardamos el anterior hilo ejecutado en prev
+    running = scheduler();   //Llamamos al scheduler para que me de el hilo a ejecutar
+    activator(running);      //Llamamos al activador para realizar el setcontext
 }
 
 
@@ -282,7 +287,6 @@ TCB* scheduler()
     }
   }
   printf("*** FINISH\n");
-  printf("mythread_free: No thread in the system\nExiting...\n");
   exit(1);
 }
 
@@ -290,15 +294,16 @@ TCB* scheduler()
 /* Timer interrupt */
 void timer_interrupt(int sig)
 {
-  if (running->priority == LOW_PRIORITY) running->ticks = running->ticks-1; //restar un tick al hilo en ejcucion
-
+  if (running->priority == LOW_PRIORITY){
+     running->ticks = running->ticks-1; //restar un tick al hilo en ejcucion
+  }
   running->remaining_ticks = running->remaining_ticks - 1;
   // Si el proceso ejecutándose ya ha terminado de ejecutarse, se llama a mythread_timeout.
-  if (running->remaining_ticks == 0){
+  if (running->remaining_ticks < 0){
     mythread_timeout(running->tid);
   }
-  //Si los ticks han llegado a 0.
-  if (running->ticks == 0){
+  //Si los ticks han llegado a 0 (por lo tanto prioridad baja).
+  if (running->ticks == 0 && running->priority == LOW_PRIORITY){
     //Si no hay hilos listos, se pueden reiniciar los ticks del hilo actual para que se siga ejecutando
     running->state = INIT; //listo para ejecutar
     running->ticks = QUANTUM_TICKS; //reinicia ticks
@@ -306,45 +311,43 @@ void timer_interrupt(int sig)
     disable_interrupt();
     disable_disk_interrupt();
     enqueue(t_queue, running); //encola en lista de listos
-    disable_disk_interrupt();
+    enable_disk_interrupt();
     enable_interrupt();
 
-    TCB* prev = running; //hilo que ha estado corriendo hasta este momento
+    prev = running; //hilo que ha estado corriendo hasta este momento
     running = scheduler(); //llamada a la funcion scheduler
+    if (prev != running){
     printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
-    running->state = RUNNING;
-    activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
+    activator(running); //llamada a la funcion activator con el hilo que ha estado corriendo
+          }
   }
-  else {
+  /*else {
     // Si hay un proceso de prioridad alta listo.
     if (!queue_empty(t_queue_high)) {
       running->state = INIT; //listo para ejecutar
-      running->ticks = QUANTUM_TICKS; //reinicia ticks
 
       disable_interrupt();
       disable_disk_interrupt();
-      enqueue(t_queue, running); //encola en lista de listos
-      disable_disk_interrupt();
+      sorted_enqueue(t_queue_high, running, running->remaining_ticks); //encola en lista de listos de alta prioridad
+      enable_disk_interrupt();
       enable_interrupt();
 
-      TCB* prev = running; //hilo que ha estado corriendo hasta este momento
+      prev = running; //hilo que ha estado corriendo hasta este momento
       running = scheduler(); //llamada a la funcion scheduler
       printf("*** THREAD %d PREEMTED : SETCONTEXT OF %d\n", prev->tid, running->tid);
       running->state = RUNNING;
       activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
     }
-  }
+  }*/
 }
 
 /* Activator */
 void activator(TCB* next)
 {
-  if(swapcontext (&(next->run_env), &(running->run_env)) == -1){
-    setcontext (&(next->run_env));
-    printf("mythread_free: After setcontext, should never get here!!...\n");
-  }else{
-    swapcontext(&(next->run_env), &(running->run_env));
-  }
-  /*setcontext (&(next->run_env));
-  printf("mythread_free: After setcontext, should never get here!!...\n");*/
+    if(prev->state == FREE){       //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
+      setcontext (&(next->run_env));  //hago un setcontext y pongo el contexto del nuevo hilo
+      printf("mythread_free: After setcontext, should never get here!!...\n");
+    }else{
+      swapcontext(&(prev->run_env), &(next->run_env));  //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+    }
 }
