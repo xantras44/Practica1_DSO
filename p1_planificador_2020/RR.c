@@ -177,11 +177,10 @@ void mythread_exit() {
 
   prev = running;         //Guardo el anterior hilo ejecutado en prev
   printf("*** THREAD %d FINISHED\n", prev->tid);
-  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
-
   t_state[prev->tid].state = FREE;
   free(t_state[prev->tid].run_env.uc_stack.ss_sp);
   
+  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
   printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", prev->tid, running->tid);
   activator(running);     //Llamo al activador para realizar el setcontext
 }
@@ -204,7 +203,7 @@ void mythread_setpriority(int priority)
 {
   int tid = mythread_gettid();
   t_state[tid].priority = priority;
-  if(priority ==  HIGH_PRIORITY){
+  if(priority ==  HIGH_PRIORITY || priority == LOW_PRIORITY){
     t_state[tid].remaining_ticks = 195;
   }
 }

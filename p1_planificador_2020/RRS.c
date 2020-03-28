@@ -215,10 +215,11 @@ void mythread_exit() {
 
   prev = running;         //Guardo el anterior hilo ejecutado en prev
   printf("*** THREAD %d FINISHED\n", prev->tid);
-  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
   t_state[prev->tid].state = FREE;
   free(t_state[prev->tid].run_env.uc_stack.ss_sp);
-  
+  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
+ 
+
   printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", prev->tid, running->tid);
   activator(running);     //Llamo al activador para realizar el setcontext
 }
@@ -241,7 +242,7 @@ void mythread_setpriority(int priority)
 {
   int tid = mythread_gettid();
   t_state[tid].priority = priority;
-  if(priority ==  HIGH_PRIORITY){
+  if(priority ==  HIGH_PRIORITY || priority == LOW_PRIORITY){
     t_state[tid].remaining_ticks = 195;
   }
 }
@@ -321,24 +322,7 @@ void timer_interrupt(int sig)
     activator(running); //llamada a la funcion activator con el hilo que ha estado corriendo
           }
   }
-  /*else {
-    // Si hay un proceso de prioridad alta listo.
-    if (!queue_empty(t_queue_high)) {
-      running->state = INIT; //listo para ejecutar
-
-      disable_interrupt();
-      disable_disk_interrupt();
-      sorted_enqueue(t_queue_high, running, running->remaining_ticks); //encola en lista de listos de alta prioridad
-      enable_disk_interrupt();
-      enable_interrupt();
-
-      prev = running; //hilo que ha estado corriendo hasta este momento
-      running = scheduler(); //llamada a la funcion scheduler
-      printf("*** THREAD %d PREEMTED : SETCONTEXT OF %d\n", prev->tid, running->tid);
-      running->state = RUNNING;
-      activator(prev); //llamada a la funcion activator con el hilo que ha estado corriendo
-    }
-  }*/
+  
 }
 
 /* Activator */

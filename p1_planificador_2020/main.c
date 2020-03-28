@@ -182,6 +182,10 @@ int main(int argc, char *argv[])
       //printf("El paramentro introducido no es correcto\n");
     }
   }
+  else{
+    printf("introduce el argumento test\n");
+    return 0;
+  }
 
   mythread_exit();	
   
