@@ -8,22 +8,11 @@
 
 #include "mythread.h"
 
-void fun1 (int global_index)
-{
-  int a=0, b=0;
-  read_disk();
-  for (a=0; a<10; ++a) {
-    //printf ("Thread %d with priority %d\t from fun2 a = %d\tb = %d\n", mythread_gettid(), mythread_getpriority(), a, b);
-    for (b=0; b<25; ++b);
-  }
+//funcion usada en test 6 y 7
+extern void fun1(int sec);
 
-  for (a=0; a<10; ++a) {
-    //printf ("Thread %d with priority %d\t from fun2 a = %d\tb = %d\n", mythread_gettid(), mythread_getpriority(), a, b);
-    for (b=0; b<25000000; ++b);
-  }
-  mythread_exit();
-  return;
-}
+//funcion usada en test 9
+extern void fun2(int sec);
 
 //Each thread executes this function
 extern void function_thread(int sec);
@@ -161,25 +150,14 @@ int main(int argc, char *argv[])
     }
 
     // test6 RRSD Comprobar que el hilo en ejecución (ya sea de alta o baja prioridad) no se bloquea si los datos estan en cache
-    /*Para realizar este test es preciso hacer un cambio en la funcion que ejecutan los hilos, pasando a ser:
-    void function_thread(int sec)
-    {
-    //time_t end = time(NULL) + sec;
-    while(running->remaining_ticks)
-    {
-
-    }
-    read_disk();
-    mythread_exit();
-  }
-    */
+    /*Este test utiliza una función para lo hilos distinta a la base, la funcion (fun1) esta definida al principio de este codigo*/
     else if ((strcmp(argv[1], "test6")) == 0){
       mythread_setpriority(HIGH_PRIORITY);
-      if((a =  mythread_create(function_thread,HIGH_PRIORITY,1)) == -1){
+      if((a =  mythread_create(fun1,HIGH_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
-      if((b =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
+      if((b =  mythread_create(fun1,LOW_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
@@ -188,11 +166,11 @@ int main(int argc, char *argv[])
     // test7 RRSD Comprobar que el hilo en ejecución (ya sea de alta o baja prioridad) se bloquea si los datos no estan en cache
     else if ((strcmp(argv[1], "test7")) == 0){
       mythread_setpriority(HIGH_PRIORITY);
-      if((a =  mythread_create(function_thread,HIGH_PRIORITY,1)) == -1){
+      if((a =  mythread_create(fun1,HIGH_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
-      if((b =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
+      if((b =  mythread_create(fun1,LOW_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
@@ -205,26 +183,14 @@ int main(int argc, char *argv[])
     }
 
     // test9 COMUN Comprobar que los hilos tanto de alta como baja prioridad son expulsados si exceden el tiempo de ejecucion
-    /*Para realizar este test es preciso hacer cambios en la función del hilo, para que excedan el tiempo de ejecucion:
-    void function_thread(int sec)
-    {
-    //time_t end = time(NULL) + sec;
-    while(running->remaining_ticks)
-    {
-        for(int i = 0; i < 1000000000000000000; i++){
-      
-    }
-    }
-    
-    mythread_exit();
-    }*/
+    /*Para realizar este test es preciso usar la funcion fun2, definida al principio de este documento*/
     else if ((strcmp(argv[1], "test9")) == 0){
       mythread_setpriority(HIGH_PRIORITY);
-      if((a =  mythread_create(function_thread,HIGH_PRIORITY,1)) == -1){
+      if((a =  mythread_create(fun2,HIGH_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
-      if((b =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
+      if((b =  mythread_create(fun2,LOW_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
