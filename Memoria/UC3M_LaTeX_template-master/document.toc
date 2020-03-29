@@ -1,0 +1,18 @@
+\babel@toc {spanish}{}
+\contentsline {section}{\numberline {1}Introducción}{2}{section.1}% 
+\contentsline {section}{\numberline {2}Diseño usado en el código}{2}{section.2}% 
+\contentsline {subsection}{\numberline {2.1}Round Robin}{3}{subsection.2.1}% 
+\contentsline {subsubsection}{\numberline {2.1.1}Estructuras de datos}{3}{subsubsection.2.1.1}% 
+\contentsline {subsubsection}{\numberline {2.1.2}Funciones}{3}{subsubsection.2.1.2}% 
+\contentsline {subsection}{\numberline {2.2}Round-Robin/ SJF con prioridades}{4}{subsection.2.2}% 
+\contentsline {subsubsection}{\numberline {2.2.1}Estructuras de datos}{4}{subsubsection.2.2.1}% 
+\contentsline {subsubsection}{\numberline {2.2.2}Funciones}{4}{subsubsection.2.2.2}% 
+\contentsline {subsection}{\numberline {2.3}Round-Robin/ SJF con posibles cambios de contexto voluntarios}{5}{subsection.2.3}% 
+\contentsline {subsubsection}{\numberline {2.3.1}Estructuras de datos}{5}{subsubsection.2.3.1}% 
+\contentsline {subsubsection}{\numberline {2.3.2}Funciones}{5}{subsubsection.2.3.2}% 
+\contentsline {section}{\numberline {3}Batería de pruebas}{7}{section.3}% 
+\contentsline {subsection}{\numberline {3.1}Round Robin}{7}{subsection.3.1}% 
+\contentsline {subsection}{\numberline {3.2}Round-Robin/ SJF con prioridades}{8}{subsection.3.2}% 
+\contentsline {subsection}{\numberline {3.3}Round-Robin/ SJF con posibles cambios de contexto voluntarios}{9}{subsection.3.3}% 
+\contentsline {section}{\numberline {4}Resultados batería de pruebas}{11}{section.4}% 
+\contentsline {section}{\numberline {5}Conclusiones}{14}{section.5}% 
