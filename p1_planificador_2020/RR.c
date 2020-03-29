@@ -15,6 +15,7 @@ void activator();
 void timer_interrupt(int sig);
 void disk_interrupt(int sig);
 
+//Definimos la cola para procesos
 struct queue *t_queue;
 
 /* Array of state thread control blocks: the process allows a maximum of N threads */
@@ -95,6 +96,7 @@ void init_mythreadlib()
     t_state[i].state = FREE;
   }
 
+  //Creamos la cola que vamos a usar
   t_queue = queue_new();
 
   t_state[0].tid = 0;
@@ -172,29 +174,29 @@ void disk_interrupt(int sig)
 /* Free terminated thread and exits */
 void mythread_exit() {
   //int tid = mythread_gettid();
-                                          /*Hemos decidido no hacer uso de la función gettid en este caso, pues nos resulta
+                                        /*Hemos decidido no hacer uso de la función gettid en este caso, pues nos resulta
                                         facil usar el tid del hilo que sabemos que va  asalir de ejecucion*/
 
-  prev = running;         //Guardo el anterior hilo ejecutado en prev
+  prev = running;                       //Guardo el anterior hilo ejecutado en prev
   printf("*** THREAD %d FINISHED\n", prev->tid);
   t_state[prev->tid].state = FREE;
   free(t_state[prev->tid].run_env.uc_stack.ss_sp);
   
-  running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
+  running = scheduler();                //Llamo al scheduler para que me de el hilo a ejecutar
   printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", prev->tid, running->tid);
-  activator(running);     //Llamo al activador para realizar el setcontext
+  activator(running);                   //Llamo al activador para realizar el setcontext
 }
 
-
+//Expulsa a un hilo si excede su tiempo de ejecucion asignado y libera su espacio
 void mythread_timeout(int tid) {
 
     printf("*** THREAD %d EJECTED\n", tid);
     t_state[tid].state = FREE;
     free(t_state[tid].run_env.uc_stack.ss_sp);
 
-    prev = running;          //Guardamos el anterior hilo ejecutado en prev
-    running = scheduler();   //Llamamos al scheduler para que me de el hilo a ejecutar
-    activator(running);      //Llamamos al activador para realizar el setcontext
+    prev = running;                 //Guardamos el anterior hilo ejecutado en prev
+    running = scheduler();          //Llamamos al scheduler para que me de el hilo a ejecutar
+    activator(running);             //Llamamos al activador para realizar el setcontext
 }
 
 
@@ -227,12 +229,13 @@ int mythread_gettid(){
 
 TCB* scheduler()
 {
-  TCB* next; //almacena el proximo hilo a ejecutar
-  if (!queue_empty(t_queue)){ //si la cola no esta vacia se desencola
-	  disable_interrupt(); //para proteger el acceso a la cola
-    disable_disk_interrupt();
-    next = dequeue(t_queue); //proximo hilo a correr
-	  enable_disk_interrupt();
+  TCB* next;        //almacena el proximo hilo a ejecutar
+   //si la cola no esta vacia se desencola
+  if (!queue_empty(t_queue)){
+	  disable_interrupt();
+    disable_disk_interrupt();               //Antes de acceder a las colas se deshabilitan las interrupciones
+    next = dequeue(t_queue);                //proximo hilo a correr
+	  enable_disk_interrupt();                //Despues de acceder a las colas se habilitan las interrupciones
     enable_interrupt();
 	  return next;
   }
@@ -244,29 +247,31 @@ TCB* scheduler()
 /* Timer interrupt */
 void timer_interrupt(int sig)
 {
-  running->ticks = running->ticks-1; //restar un tick al hilo en ejcucion
-  running->remaining_ticks = running->remaining_ticks - 1;  //restar 1 al tiempo que le queda al proceso
+  running->ticks = running->ticks-1;                    //restar un tick al hilo en ejcucion
+  running->remaining_ticks = running->remaining_ticks - 1;          //restar 1 al tiempo que le queda al proceso
+
   // Si el proceso ejecutándose ya ha terminado de ejecutarse, se llama a mythread_timeout.
   if (running->remaining_ticks < 0){
     mythread_timeout(running->tid);
   }
 
-  if (running->ticks == 0){ //si los ticks han llegado a 0 se restablecen los ticks y se encola de nuevo el hilo
-    running->state = INIT; //listo para ejecutar
-    running->ticks = QUANTUM_TICKS; //reinicia ticks
+  //si los ticks han llegado a 0 se restablecen los ticks y se encola de nuevo el hilo
+  if (running->ticks == 0){ 
+    running->state = INIT;                //listo para ejecutar
+    running->ticks = QUANTUM_TICKS;       //reinicia ticks
 
     disable_interrupt();
-    disable_disk_interrupt();
-    enqueue(t_queue, running); //encola en lista de listos
-    enable_disk_interrupt();
+    disable_disk_interrupt();             //Antes de acceder a las colas se deshabilitan las interrupciones
+    enqueue(t_queue, running);            //encola en cola de procesos
+    enable_disk_interrupt();              //Despues de acceder a las colas se habilitan las interrupciones
     enable_interrupt();
 
-	  prev = running; //hilo que ha estado corriendo hasta este momento
-	  running = scheduler(); //llamada a la funcion scheduler para obtener el hilo a ejecutar
+	  prev = running;                      //hilo que ha estado corriendo hasta este momento
+	  running = scheduler();               //llamada a la funcion scheduler
     if (prev != running){
 	  printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
     
-    activator(running); //llamada a la funcion activator para el cambio de contexto
+    activator(running);                  //llamada a la funcion activator con el hilo que ha estado corriendo
           }
 	    }
   
@@ -275,13 +280,15 @@ void timer_interrupt(int sig)
 /* Activator */
 void activator(TCB* next)
 {
-    if(prev->state == FREE){       //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
-      if (setcontext (&(next->run_env)) == -1){  //hago un setcontext y pongo el contexto del nuevo hilo
+    //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
+    if(prev->state == FREE){
+      if (setcontext (&(next->run_env)) == -1){      //hago un setcontext y pongo el contexto del nuevo hilo
         perror("Error al ejecutar setcontext, ejecución no debería llegar aquí");
         exit(-1);
       }
     }else{
-      if(swapcontext(&(prev->run_env), &(next->run_env)) == -1){ //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+      //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+      if(swapcontext(&(prev->run_env), &(next->run_env)) == -1){
         perror("Error al ejecutar swapcontext");
         exit(-1);
       }  
