@@ -12,16 +12,16 @@ void fun1 (int global_index)
 {
   int a=0, b=0;
   read_disk();
-  for (a=0; a<10; ++a) { 
+  for (a=0; a<10; ++a) {
     //printf ("Thread %d with priority %d\t from fun2 a = %d\tb = %d\n", mythread_gettid(), mythread_getpriority(), a, b);
     for (b=0; b<25; ++b);
   }
 
-  for (a=0; a<10; ++a) { 
+  for (a=0; a<10; ++a) {
     //printf ("Thread %d with priority %d\t from fun2 a = %d\tb = %d\n", mythread_gettid(), mythread_getpriority(), a, b);
     for (b=0; b<25000000; ++b);
   }
-  mythread_exit(); 
+  mythread_exit();
   return;
 }
 
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   int j,k,l,m,a,b,f;
 
   if (argc > 1){
-    
+
     mythread_setpriority(HIGH_PRIORITY);
     //test0 o por defecto
     if ((strcmp(argv[1], "test0")) == 0){
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
           printf("thread failed to initialize\n");
           exit(-1);
       }
-      
+
       read_disk();
       read_disk();
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
       if((k = mythread_create(function_thread,HIGH_PRIORITY, 2)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
-      }  
+      }
       if((l = mythread_create(function_thread,LOW_PRIORITY, 2)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -64,11 +64,11 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-          
-        
+
+
       for (a=0; a<10; ++a) {
         for (b=0; b<30000000; ++b);
-      }	
+      }
     }
     // test1 RR  Comprobar que ocurre si acaba la ejecucion del hilo antes de que acabe su rodaja
     if ((strcmp(argv[1], "test1")) == 0){
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test2 RR  Comprobar que si el hilo acaba la ejecución junto a la rodaja sale del sistema y no reestablece la rodaja y sigue en ejecucion
     else if ((strcmp(argv[1], "test2")) == 0){
       if((a =  mythread_create(function_thread,LOW_PRIORITY,0.2)) == -1){
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test4  RRS Comprobar que un hilo de prioridad alta es sustituido en la ejecucion por otro de prioridad alta y menor tiempo de ejecucion que llegue
     else if ((strcmp(argv[1], "test4")) == 0){
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,0.1)) == -1){
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test5
     else if ((strcmp(argv[1], "test5")) == 0){
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,3)) == -1){
@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test6
     else if ((strcmp(argv[1], "test6")) == 0){
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,3)) == -1){
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test7
     else if ((strcmp(argv[1], "test7")) == 0){
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,3)) == -1){
@@ -162,8 +162,8 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-      
-    } 
+
+    }
     // test8
     else if ((strcmp(argv[1], "test8")) == 0){
       if((a =  mythread_create(function_thread,LOW_PRIORITY,10)) == -1){
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test9
     else if ((strcmp(argv[1], "test9")) == 0){
       if((a =  mythread_create(function_thread,LOW_PRIORITY,41)) == -1){
@@ -197,14 +197,14 @@ int main(int argc, char *argv[])
         exit(-1);
       }
     }// test11
-    else if ((strcmp(argv[1], "test9")) == 0){
-      
+    else if ((strcmp(argv[1], "test11")) == 0){
+
     }// test12
-    else if ((strcmp(argv[1], "test9")) == 0){
-      
+    else if ((strcmp(argv[1], "test12")) == 0){
+
     }// test13
-    else if ((strcmp(argv[1], "test9")) == 0){
-      
+    else if ((strcmp(argv[1], "test13")) == 0){
+
     }else {
       //printf("El paramentro introducido no es correcto\n");
     }
@@ -214,11 +214,9 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  mythread_exit();	
-  
+  mythread_exit();
+
   printf("This program should never come here\n");
-  
+
   return 0;
 } /****** End main() ******/
-
-
