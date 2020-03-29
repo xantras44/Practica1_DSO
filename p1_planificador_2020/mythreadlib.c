@@ -176,9 +176,9 @@ int mythread_create (void (*fun_addr)(),int priority,int seconds)
       prev = running; //hilo que ha estado corriendo hasta este momento
       running = t; //llamada a la funcion scheduler
       printf("*** SWAPCONTEXT FROM %d TO %d\n", prev->tid, running->tid);
-      activator(running); //llamada a la funcion activator
+      activator(running); //llamada a la funcion activator 
     }
-
+  
 else if (t->priority == HIGH_PRIORITY && running->priority == HIGH_PRIORITY && t->remaining_ticks >= running->remaining_ticks){
     t->state = INIT; //listo para ejecutar
 
@@ -209,7 +209,7 @@ void disk_interrupt(int sig)
 
 /* Free terminated thread and exits */
 void mythread_exit() {
-  //int tid = mythread_gettid();
+  //int tid = mythread_gettid();     
                                         /*Hemos decidido no hacer uso de la función gettid en este caso, pues nos resulta
                                         facil usar el tid del hilo que sabemos que va  asalir de ejecucion*/
 
@@ -218,7 +218,7 @@ void mythread_exit() {
   t_state[prev->tid].state = FREE;
   free(t_state[prev->tid].run_env.uc_stack.ss_sp);
   running = scheduler();  //Llamo al scheduler para que me de el hilo a ejecutar
-
+ 
 
   printf("*** THREAD %d TERMINATED : SETCONTEXT OF %d\n", prev->tid, running->tid);
   activator(running);     //Llamo al activador para realizar el setcontext
@@ -320,16 +320,22 @@ void timer_interrupt(int sig)
     activator(running); //llamada a la funcion activator con el hilo que ha estado corriendo
           }
   }
-
+  
 }
 
 /* Activator */
 void activator(TCB* next)
 {
     if(prev->state == FREE){       //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
-      setcontext (&(next->run_env));  //hago un setcontext y pongo el contexto del nuevo hilo
-      printf("mythread_free: After setcontext, should never get here!!...\n");
+      if(setcontext (&(next->run_env)) == -1){ //hago un setcontext y pongo el contexto del nuevo hilo
+        perror("Fallo en el setcontext, no se debería llegar a este punto");
+        exit(-1);
+      }  
+
     }else{
-      swapcontext(&(prev->run_env), &(next->run_env));  //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+      if(swapcontext(&(prev->run_env), &(next->run_env)) == -1){  //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+        perror("Fallo en el swapcontext, no se debería llegar a este punto");
+        exit(-1);
+      }
     }
 }

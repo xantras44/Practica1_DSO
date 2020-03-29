@@ -278,11 +278,12 @@ void activator(TCB* next)
     if(prev->state == FREE){       //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
       if (setcontext (&(next->run_env)) == -1){  //hago un setcontext y pongo el contexto del nuevo hilo
         perror("Error al ejecutar setcontext, ejecución no debería llegar aquí");
+        exit(-1);
       }
-      printf("mythread_free: After setcontext, should never get here!!...\n");
     }else{
       if(swapcontext(&(prev->run_env), &(next->run_env)) == -1){ //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
         perror("Error al ejecutar swapcontext");
+        exit(-1);
       }  
     }
 }
