@@ -38,6 +38,32 @@ static int init=0;
 /* Thread control block for the idle thread */
 static TCB idle;
 
+//Funcion usada en algunas pruebas
+void fun1(int sec)
+    {
+    //time_t end = time(NULL) + sec;
+    while(running->remaining_ticks)
+    {
+
+    }
+    read_disk();
+    mythread_exit();
+  }
+
+//Funcion usada en algunas pruebas
+void fun2(int sec)
+    {
+    //time_t end = time(NULL) + sec;
+    while(running->remaining_ticks)
+    {
+        for(int i = 0; i < 1000000000000000000; i++){
+      
+    }
+    }
+    
+    mythread_exit();
+    }
+
 static void idle_function()
 {
   while(1);
