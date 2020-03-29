@@ -488,20 +488,21 @@ Para poder implementar el planificador \textit{Round-Robin/SJF} en necesario añ
 
 
 \section{Batería de pruebas}
-Para poder comprobar el código realizado se van a crear una serie de \textbf{diagramas para cada planificador}, para poder ir viendo las distintas opciones de ejecución. Cada árbol contendrá todos los posibles casos como nodos terminales. Se han incluido líneas discontinuas para aquellos casos que se puedan repetir, y así poder cerrar el ciclo total de cada ejecución.
+Para poder comprobar el código realizado se van a crear una serie de \textbf{diagramas para cada planificador}, para poder ir viendo las distintas opciones de ejecución. Cada diagrama contendrá todos los posibles casos como nodos terminales. Se han incluido líneas discontinuas para aquellos casos que se puedan repetir, y así poder cerrar el ciclo total de cada ejecución.
 
-Con respecto al código, se ha creado un \textbf{script} de bash denominado \textbf{\textit{pruebas}}, el cual se ejecutará dentro del directorio donde se encuentran todos los ficheros de la práctica. En la clase principal del programa, \textit{main.c}, se han diferenciado todas las posibles pruebas de tal manera que para ejecutar cada una individualmente se hará de la siguiente manera: \textbf{\textit{./main testX}}. Para una mayor comodidad, todas las pruebas se llaman testX, donde X es el número identificativo de cada prueba.
+En la clase principal del programa, \textit{main.c}, se han diferenciado todas las posibles pruebas de tal manera que para ejecutar cada una individualmente se hará de la siguiente manera: \textbf{\textit{./main testX}}. Para una mayor comodidad, todas las pruebas se llaman testX, donde X es el número identificativo de cada prueba.
 
-El script se encargará de, en primer lugar, hacer make y a continuación \textbf{ejecutar todas las pruebas} que han sido implementadas de manera individual, tal y como se ha indicado anteriormente. A lo largo de este punto se irá desarrollando que hace cada prueba, indicando a su vez el nombre otorgado.El \textbf{\textit{test0}} es el test por defecto que se da en el código base de la práctica.
+A lo largo de este punto se irá desarrollando que hace cada prueba, indicando a su vez el nombre otorgado.El \textbf{\textit{test0}} es el test por defecto que se da en el código base de la práctica.
 
 \subsection{Round Robin}
-Este caso es el más sencillo a la hora de crear el árbol, ya que no se tiene en cuenta la prioridad del proceso, sino que se encolan todos de igual manera y se van ejecutando en función a una rodaja de tiempo predeterminada. Por ello, el árbol sera el siguiente:
+Este caso es el más sencillo a la hora de crear el diagrama, ya que no se tiene en cuenta la prioridad del proceso, sino que se encolan todos de igual manera y se van ejecutando en función a una rodaja de tiempo predeterminada. Por ello, el diagrama sera el indicado en la Figura \ref{fig:testRR}.
 
 \vspace{0.5cm}
 \begin{figure}[h]
     \centering
     \includegraphics[width=10cm]{arboles/testRR.png}
     \caption{Árbol de pruebas Round Robin.}
+    \label{fig:testRR}
 \end{figure}
 
 Como se puede ver, hay 2 opciones: que la \textbf{cola de procesos está vacía} o tenga algún proceso. En caso de estar vacía, \textbf{termina la ejecución}. Por otro lado, en caso de tener 1 o más procesos se ejecuta cada proceso el tiempo indicado en QUANTUM\_TICKS. En caso de terminar el proceso antes de finalizar dicha rodaja de tiempo, finaliza la ejecución y llamará al planificador para obtener el siguiente proceso si quedan (se implementa como \textbf{\textit{test1}}. Tabla \ref{fig:resultRR}).  
@@ -511,12 +512,13 @@ En caso de \textbf{finalizar} el tiempo marcado por cada \textbf{rodaja} pueden 
 Si llega un proceso durante la ejecución de otro proceso se encola con su rodaja correspondiente en la cola de procesos (comprobado en todos los test anteriores, principalmente en el \textbf{\textit{test1}}. Tabla \ref{fig:resultRR}).
 
 \subsection{Round-Robin/ SJF con prioridades}
-El árbol creado para este caso ha sido el siguiente:
+El diagrama creado para este caso ha sido el mostrado en la Figura \ref{fig:testRRS}.
 \vspace{0.5cm}
 \begin{figure}[h]
     \centering
     \includegraphics[width=14cm]{arboles/testRRS.png}
     \caption{Árbol de pruebas RRS}
+    \label{fig:testRRS}
 \end{figure}
 
 En primer lugar, se analizan la cola de alta prioridad y la de baja prioridad, en ese orden, para ver qué proceso va a ejecutarse (llamada al planificador). En caso de no haber procesos pendientes finaliza la ejecución. En el caso de existir algún proceso pendiente, en \textbf{primer lugar} se ejecutarán aquellos procesos de \textbf{alta prioridad}. 
@@ -530,16 +532,17 @@ Además, mientras se ejecuta un proceso de baja prioridad puede darse el caso en
 
 
 \subsection{Round-Robin/ SJF con posibles cambios de contexto voluntarios}
-Para el siguiente árbol se ha partido del árbol adjunto en el apartado anterior :
+Para el siguiente diagrama se ha partido del diagrama adjunto en el apartado anterior. Figura \ref{fig:testRRSD}
 \vspace{0.5cm}
 \begin{figure}[h]
     \centering
     \includegraphics[width=15cm]{arboles/testRRSD.png}
     \caption{Árbol de pruebas RRSD}
+    \label{fig:testRRSD}
 \end{figure}
 
 \newpage
-Las diferencias se encuentran marcadas de otro color: naranja para los nodos y azul para los diversos enlaces y sus respectivos textos asociados. Como se puede apreciar, se han añadido los casos para los \textbf{cambios de contexto voluntarios} (indicados en la imagen como CCV). Puesto que el código también se reutiliza, aquellas pruebas que resulten repetitivas no se han ejecutado.
+Las diferencias se encuentran marcadas de otro color: naranja para los nodos y azul para los diversos enlaces y sus respectivos textos asociados. Como se puede apreciar, se han añadido los casos para los \textbf{cambios de contexto voluntarios} (indicados en la figura como CCV). Puesto que el código también se reutiliza, aquellas pruebas que resulten repetitivas no se han ejecutado.
 
 Durante la ejecución de un proceso este puede requerir un cambio de contexto voluntario (llamada a \textit{read\_disk}). Si la información que requiere el proceso se encuentra \textbf{en caché}, el proceso tomará dichos datos y \textbf{continuará} su ejecución sin realizar ninguna acción más (caso implementado como \textbf{\textit{test6}} este caso vamos a probar que se realiza correctamente tanto para hilos de alta como baja prioridad. Tabla \ref{fig:resultRRSD}), dependiendo si parte de un proceso de prioridad alta o de prioridad baja). Si por el contrario la información requerida \textbf{no} se encontrase \textbf{en memoria caché}, el proceso se añadiría a la \textbf{cola de bloqueados} y se llamaría al planificador para ejecutar el siguiente proceso que toque (caso implementado como \textbf{\textit{test7}}. Tabla \ref{fig:resultRRSD}).
 
@@ -609,5 +612,9 @@ Podemos comprobar que todas las pruebas son lo más completas posibles, evitando
 
 \newpage
 \section{Conclusiones}
+Gracias a esta práctica hemos aprendido cómo desarrollar distintos planificadores de procesos (Round-Robin, Round-Robin/SJF con prioridades y Round-Robin/SJF con cambios de contexto voluntarios), para lo que es necesario tener en cuenta, entre otras cosas, todas las estructuras de datos que necesita cada planificador (rodaja, colas de diferentes prioridades, etc.). También es necesario estudiar todos los casos posibles con detenimiento ya que, por ejemplo, no expulsar a un proceso de ejecución en su momento puede provocar errores en la ejecución que se pueden ir acumulando. 
+
+Por otra parte, esta práctica nos ha servido para mejorar nuestra capacidades de toma de decisiones y resolución de problemas. Nos hemos tenido que enfrentar a varios dilemas como, por ejemplo, a la hora de decidir si usábamos el estado “RUNNING” para el proceso que se está ejecutando (al final hemos decidido no usarlo ya que el proceso en ejecución es el que almacena la variable “running”). Otra toma de decisión se ha dado al  debatir si era necesario usar o no la función \textit{mythread\_gettid()} para obtener el identificador de un proceso, cuando los TCB contienen un atributo que es el propio identificador del proceso al que se accede mediante “proceso.tid”.
+
 
 \end{document}

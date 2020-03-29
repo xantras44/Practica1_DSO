@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Arch Linux) (preloaded format=pdflatex 2020.2.12)  29 MAR 2020 18:37
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Arch Linux) (preloaded format=pdflatex 2020.2.12)  29 MAR 2020 19:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -776,40 +776,32 @@ Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
 ine 475.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
  [6]
-<arboles/testRR.png, id=167, 771.88374pt x 492.84125pt>
+<arboles/testRR.png, id=168, 771.88374pt x 492.84125pt>
 File: arboles/testRR.png Graphic file (type png)
 <use arboles/testRR.png>
 Package pdftex.def Info: arboles/testRR.png  used on input line 503.
 (pdftex.def)             Requested size: 284.52756pt x 181.66406pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 511.
+ine 509.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
-[7]
-<arboles/testRRS.png, id=176, 1116.17pt x 778.91pt>
+ [7 <./arboles/testRR.png>]
+<arboles/testRRS.png, id=179, 1116.17pt x 778.91pt>
 File: arboles/testRRS.png Graphic file (type png)
 <use arboles/testRRS.png>
-Package pdftex.def Info: arboles/testRRS.png  used on input line 518.
+Package pdftex.def Info: arboles/testRRS.png  used on input line 519.
 (pdftex.def)             Requested size: 398.33858pt x 277.97092pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 528.
+ine 527.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
-[8 <./arboles/testRR.png>]
-<arboles/testRRSD.png, id=187, 1147.28625pt x 778.91pt>
+ [8 <./arboles/testRRS.png>]
+<arboles/testRRSD.png, id=191, 1147.28625pt x 778.91pt>
 File: arboles/testRRSD.png Graphic file (type png)
 <use arboles/testRRSD.png>
-Package pdftex.def Info: arboles/testRRSD.png  used on input line 537.
+Package pdftex.def Info: arboles/testRRSD.png  used on input line 539.
 (pdftex.def)             Requested size: 426.79134pt x 289.74915pt.
 
 
@@ -818,81 +810,81 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 541.
+ine 544.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
-[9 <./arboles/testRRS.png>]
+[9]
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 549.
+ine 552.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
  [10 <./arboles/testRRSD.png>]
-<arboles/test9.png, id=201, 458.71375pt x 109.40875pt>
+<arboles/test9.png, id=204, 458.71375pt x 109.40875pt>
 File: arboles/test9.png Graphic file (type png)
 <use arboles/test9.png>
-Package pdftex.def Info: arboles/test9.png  used on input line 558.
+Package pdftex.def Info: arboles/test9.png  used on input line 561.
 (pdftex.def)             Requested size: 142.26378pt x 33.93138pt.
-<arboles/test10.png, id=202, 247.92625pt x 46.1725pt>
+<arboles/test10.png, id=205, 247.92625pt x 46.1725pt>
 File: arboles/test10.png Graphic file (type png)
 <use arboles/test10.png>
-Package pdftex.def Info: arboles/test10.png  used on input line 560.
+Package pdftex.def Info: arboles/test10.png  used on input line 563.
 (pdftex.def)             Requested size: 142.26378pt x 26.4947pt.
-<arboles/test1.png, id=203, 459.7175pt x 594.22pt>
+<arboles/test1.png, id=206, 459.7175pt x 594.22pt>
 File: arboles/test1.png Graphic file (type png)
 <use arboles/test1.png>
-Package pdftex.def Info: arboles/test1.png  used on input line 571.
+Package pdftex.def Info: arboles/test1.png  used on input line 574.
 (pdftex.def)             Requested size: 113.81102pt x 147.1039pt.
-<arboles/test2.png, id=204, 462.72874pt x 90.3375pt>
+<arboles/test2.png, id=207, 462.72874pt x 90.3375pt>
 File: arboles/test2.png Graphic file (type png)
 <use arboles/test2.png>
-Package pdftex.def Info: arboles/test2.png  used on input line 572.
+Package pdftex.def Info: arboles/test2.png  used on input line 575.
 (pdftex.def)             Requested size: 156.49014pt x 30.55168pt.
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 578.
+ine 581.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
  [11 <./arboles/test9.png> <./arboles/test10.png> <./arboles/test1.png> <./arbo
 les/test2.png>]
-<arboles/test3.png, id=213, 461.725pt x 439.6425pt>
+<arboles/test3.png, id=216, 461.725pt x 439.6425pt>
 File: arboles/test3.png Graphic file (type png)
 <use arboles/test3.png>
-Package pdftex.def Info: arboles/test3.png  used on input line 584.
+Package pdftex.def Info: arboles/test3.png  used on input line 587.
 (pdftex.def)             Requested size: 167.87108pt x 159.84094pt.
 
-Overfull \hbox (3.55354pt too wide) in paragraph at lines 584--584
+Overfull \hbox (3.55354pt too wide) in paragraph at lines 587--587
  []| 
  []
 
-<arboles/test4.png, id=214, 458.71375pt x 175.65625pt>
+<arboles/test4.png, id=217, 458.71375pt x 175.65625pt>
 File: arboles/test4.png Graphic file (type png)
 <use arboles/test4.png>
-Package pdftex.def Info: arboles/test4.png  used on input line 585.
+Package pdftex.def Info: arboles/test4.png  used on input line 588.
 (pdftex.def)             Requested size: 156.49014pt x 59.92603pt.
-<arboles/test5.png, id=215, 469.755pt x 485.815pt>
+<arboles/test5.png, id=218, 469.755pt x 485.815pt>
 File: arboles/test5.png Graphic file (type png)
 <use arboles/test5.png>
-Package pdftex.def Info: arboles/test5.png  used on input line 586.
+Package pdftex.def Info: arboles/test5.png  used on input line 589.
 (pdftex.def)             Requested size: 167.87108pt x 173.61082pt.
 
-Overfull \hbox (3.55354pt too wide) in paragraph at lines 586--587
+Overfull \hbox (3.55354pt too wide) in paragraph at lines 589--590
  []| 
  []
 
-<arboles/test6.png, id=216, 471.7625pt x 130.4875pt>
+<arboles/test6.png, id=219, 471.7625pt x 130.4875pt>
 File: arboles/test6.png Graphic file (type png)
 <use arboles/test6.png>
-Package pdftex.def Info: arboles/test6.png  used on input line 598.
+Package pdftex.def Info: arboles/test6.png  used on input line 601.
 (pdftex.def)             Requested size: 156.49014pt x 43.284pt.
-<arboles/test7.png, id=217, 474.77374pt x 312.16624pt>
+<arboles/test7.png, id=220, 474.77374pt x 312.16624pt>
 File: arboles/test7.png Graphic file (type png)
 <use arboles/test7.png>
-Package pdftex.def Info: arboles/test7.png  used on input line 599.
+Package pdftex.def Info: arboles/test7.png  used on input line 602.
 (pdftex.def)             Requested size: 156.49014pt x 102.89133pt.
-<arboles/test8.png, id=218, 379.4175pt x 133.49875pt>
+<arboles/test8.png, id=221, 379.4175pt x 133.49875pt>
 File: arboles/test8.png Graphic file (type png)
 <use arboles/test8.png>
-Package pdftex.def Info: arboles/test8.png  used on input line 600.
+Package pdftex.def Info: arboles/test8.png  used on input line 603.
 (pdftex.def)             Requested size: 156.49014pt x 55.06279pt.
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
@@ -900,55 +892,55 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 607.
+ine 610.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
 [12 <./arboles/test3.png> <./arboles/test4.png> <./arboles/test5.png>]
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 610.
+ine 613.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
  [13 <./arboles/test6.png> <./arboles/test7.png> <./arboles/test8.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 613.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 620.
 File: template/logo_completo_horizontal.png Graphic file (type png)
 <use template/logo_completo_horizontal.png>
 Package pdftex.def Info: template/logo_completo_horizontal.png  used on input l
-ine 613.
+ine 620.
 (pdftex.def)             Requested size: 140.19774pt x 42.39656pt.
  [14]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 613.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 620.
 
 (./document.aux
 LaTeX Info: Redefining \. on input line 20.
 LaTeX Info: Redefining \% on input line 20.
 )
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 613.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 613.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 620.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 620.
 Package rerunfilecheck Info: File `document.out' has not changed.
 (rerunfilecheck)             Checksum: 7DBDA472BCB954C1371CDA2BF7C545E6;1237.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 613.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 620.
  )
 (\end occurred inside a group at level 1)
 
 ### semi simple group (level 1) entered at line 65 (\begingroup)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 10045 strings out of 492167
- 147070 string characters out of 6131558
- 280177 words of memory out of 5000000
- 14201 multiletter control sequences out of 15000+600000
+ 10048 strings out of 492167
+ 147109 string characters out of 6131558
+ 280344 words of memory out of 5000000
+ 14204 multiletter control sequences out of 15000+600000
  30760 words of font info for 34 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 63i,24n,100p,1136b,1960s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 63i,23n,100p,1136b,1960s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fon
 ts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helveti
 c/uhvbo8a.pfb></usr/share/texmf-dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/
 share/texmf-dist/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on document.pdf (15 pages, 568986 bytes).
+Output written on document.pdf (15 pages, 569647 bytes).
 PDF statistics:
- 270 PDF objects out of 1000 (max. 8388607)
- 215 compressed objects within 3 object streams
+ 273 PDF objects out of 1000 (max. 8388607)
+ 218 compressed objects within 3 object streams
  39 named destinations out of 1000 (max. 500000)
  212 words of extra memory for PDF output out of 10000 (max. 10000000)
 
