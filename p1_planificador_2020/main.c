@@ -33,7 +33,6 @@ extern void function_thread(int sec);
 int main(int argc, char *argv[])
 {
   int j,k,l,m,a,b,f;
-  int c, d, e, g;
 
   if (argc > 1){
     
@@ -71,34 +70,62 @@ int main(int argc, char *argv[])
         for (b=0; b<30000000; ++b);
       }	
     }
-    // test1
+    // test1 RR  Comprobar que ocurre si acaba la ejecucion del hilo antes de que acabe su rodaja
     if ((strcmp(argv[1], "test1")) == 0){
-      if((a =  mythread_create(function_thread,LOW_PRIORITY,10)) == -1){
+      if((a =  mythread_create(function_thread,LOW_PRIORITY,0.1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((b =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((m =  mythread_create(function_thread,LOW_PRIORITY,0.1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((f =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((l =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
     } 
-    // test2
+    // test2 RR  Comprobar que si el hilo acaba la ejecución junto a la rodaja sale del sistema y no reestablece la rodaja y sigue en ejecucion
     else if ((strcmp(argv[1], "test2")) == 0){
-      if((a =  mythread_create(function_thread,LOW_PRIORITY,40)) == -1){
+      if((a =  mythread_create(function_thread,LOW_PRIORITY,0.2)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
     }
-    // test3 
+    // test3 RRS Comprobar que se respetan las prioridades y que el SJF y el RR se realizan correctamente
     else if ((strcmp(argv[1], "test3")) == 0){
-      if((a =  mythread_create(function_thread,LOW_PRIORITY,100)) == -1){
+      if((a =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((b =  mythread_create(function_thread,LOW_PRIORITY,2)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((f =  mythread_create(function_thread,HIGH_PRIORITY,3)) == -1){
+        printf("thread failed to initialize\n");
+        exit(-1);
+      }
+      if((l =  mythread_create(function_thread,HIGH_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
     } 
-    // test4
+    // test4  RRS Comprobar que un hilo de prioridad alta es sustituido en la ejecucion por otro de prioridad alta y menor tiempo de ejecucion que llegue
     else if ((strcmp(argv[1], "test4")) == 0){
-      if((a =  mythread_create(function_thread,LOW_PRIORITY,50)) == -1){
+      if((a =  mythread_create(function_thread,HIGH_PRIORITY,0.1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }
-      if((b =  mythread_create(function_thread,LOW_PRIORITY,3)) == -1){
+      if((b =  mythread_create(function_thread,HIGH_PRIORITY,0.1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
       }

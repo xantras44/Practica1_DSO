@@ -273,7 +273,6 @@ TCB* scheduler()
     next = dequeue(t_queue_high); //proximo hilo a correr
     enable_disk_interrupt();
     enable_interrupt();
-	  current = next->tid;
 	  return next;
   }
   else {
@@ -283,7 +282,6 @@ TCB* scheduler()
       next = dequeue(t_queue); //proximo hilo a correr
       enable_disk_interrupt();
       enable_interrupt();
-  	  current = next->tid;
   	  return next;
     }
   }

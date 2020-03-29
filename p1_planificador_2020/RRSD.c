@@ -301,7 +301,6 @@ TCB* scheduler()
 {
   TCB* next; //almacena el proximo hilo a ejecutar
   if(queue_empty(t_queue_high) && queue_empty(t_queue) && !queue_empty(t_queue_wait)){
-    current = -1;
     return &idle;
   }
   if (!queue_empty(t_queue_high)){ //si la cola de alta prioridad no esta vacia.
@@ -310,7 +309,6 @@ TCB* scheduler()
     next = dequeue(t_queue_high); //proximo hilo a correr
     enable_disk_interrupt();
     enable_interrupt();
-	  current = next->tid;
 	  return next;
   }
   else {
@@ -320,7 +318,6 @@ TCB* scheduler()
       next = dequeue(t_queue); //proximo hilo a correr
       enable_disk_interrupt();
       enable_interrupt();
-  	  current = next->tid;
   	  return next;
     }
   }

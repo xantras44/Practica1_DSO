@@ -234,7 +234,6 @@ TCB* scheduler()
     next = dequeue(t_queue); //proximo hilo a correr
 	  enable_disk_interrupt();
     enable_interrupt();
-	  current = next->tid;
 	  return next;
   }
   printf("*** FINISH\n");
@@ -252,7 +251,7 @@ void timer_interrupt(int sig)
     mythread_timeout(running->tid);
   }
 
-  if (running->ticks <= 0){ //si los ticks han llegado a 0 se restablecen los ticks y se encola de nuevo el hilo
+  if (running->ticks == 0){ //si los ticks han llegado a 0 se restablecen los ticks y se encola de nuevo el hilo
     running->state = INIT; //listo para ejecutar
     running->ticks = QUANTUM_TICKS; //reinicia ticks
 
@@ -277,9 +276,13 @@ void timer_interrupt(int sig)
 void activator(TCB* next)
 {
     if(prev->state == FREE){       //Si el hilo anterior en ejecucion ha acabado, es decir su estado es FREE
-      setcontext (&(next->run_env));  //hago un setcontext y pongo el contexto del nuevo hilo
+      if (setcontext (&(next->run_env)) == -1){  //hago un setcontext y pongo el contexto del nuevo hilo
+        perror("Error al ejecutar setcontext, ejecución no debería llegar aquí");
+      }
       printf("mythread_free: After setcontext, should never get here!!...\n");
     }else{
-      swapcontext(&(prev->run_env), &(next->run_env));  //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+      if(swapcontext(&(prev->run_env), &(next->run_env)) == -1){ //Si aun no ha acabado guardo el contexto del hilo anterior y cambio contexto
+        perror("Error al ejecutar swapcontext");
+      }  
     }
 }
