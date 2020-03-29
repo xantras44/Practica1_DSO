@@ -16,13 +16,13 @@ for ((i=0 ; i<=13; i++))
         echo "Pruebas para RR.c"
     fi
 
-    if [[ $i -eq 5 ]];
+    if [[ $i -eq 3 ]];
     then
         echo "-------------------------------------------"
         echo "Pruebas para RRS.c"
     fi
 
-    if [[ $i -eq 10 ]];
+    if [[ $i -eq 6 ]];
     then
         echo "-------------------------------------------"
         echo "Pruebas para RRSD.c"

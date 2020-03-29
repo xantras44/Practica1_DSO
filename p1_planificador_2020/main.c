@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   int j,k,l,m,a,b,f;
 
   if (argc > 1){
-    
+
     mythread_setpriority(LOW_PRIORITY);
     //test0 o por defecto
     if ((strcmp(argv[1], "test0")) == 0){
@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
     }
     // test1 RR  Comprobar que ocurre si acaba la ejecucion del hilo antes de que acabe su rodaja
     if ((strcmp(argv[1], "test1")) == 0){
+      mythread_setpriority(LOW_PRIORITY);
       if((a =  mythread_create(function_thread,LOW_PRIORITY,0.1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -95,6 +96,7 @@ int main(int argc, char *argv[])
     }
     // test2 RR  Comprobar que si el hilo acaba la ejecución junto a la rodaja sale del sistema y no reestablece la rodaja y sigue en ejecucion
     else if ((strcmp(argv[1], "test2")) == 0){
+      mythread_setpriority(LOW_PRIORITY);
       if((a =  mythread_create(function_thread,LOW_PRIORITY,0.2)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -102,6 +104,7 @@ int main(int argc, char *argv[])
     }
     // test3 RRS Comprobar que se respetan las prioridades y que el SJF y el RR se realizan correctamente
     else if ((strcmp(argv[1], "test3")) == 0){
+      mythread_setpriority(HIGH_PRIORITY);
       if((a =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -121,6 +124,7 @@ int main(int argc, char *argv[])
     }
     // test4  RRS Comprobar que un hilo de prioridad alta es sustituido en la ejecucion por otro de prioridad alta y menor tiempo de ejecucion que llegue
     else if ((strcmp(argv[1], "test4")) == 0){
+      mythread_setpriority(HIGH_PRIORITY);
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,0.1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -129,9 +133,10 @@ int main(int argc, char *argv[])
         printf("thread failed to initialize\n");
         exit(-1);
       }
-    } 
+    }
     // test5  RRS Comprobar que si hay un hilo de prioridad baja ejecutando y llega uno de alta es expulsado y si solo llegan de baja prioridad se cumple el RR
     else if ((strcmp(argv[1], "test5")) == 0){
+      mythread_setpriority(LOW_PRIORITY);
       if((a =  mythread_create(function_thread,LOW_PRIORITY,1)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -151,6 +156,7 @@ int main(int argc, char *argv[])
     }
     // test6
     else if ((strcmp(argv[1], "test6")) == 0){
+      mythread_setpriority(HIGH_PRIORITY);
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,3)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
@@ -162,6 +168,7 @@ int main(int argc, char *argv[])
     }
     // test7
     else if ((strcmp(argv[1], "test7")) == 0){
+      mythread_setpriority(HIGH_PRIORITY);
       if((a =  mythread_create(function_thread,HIGH_PRIORITY,3)) == -1){
         printf("thread failed to initialize\n");
         exit(-1);
