@@ -24,28 +24,28 @@ static inline void bitmap_setbit(char *bitmap_, int i_, int val_) {
     bitmap_[(i_ >> 3)] &= ~(1 << (i_ & 0x07));
 }
 
-typedef struct{
-  unsigned int numMagico;               /* Numero magico del superbloque*/
-  unsigned int numBloquesMapaInodos;    /* Numero de bloques del mapa inodos*/
-  unsigned int numBloquesMapaDatos;     /* Numero de bloques del mapa  datos */
-  unsigned int numInodos;               /* Numero de inodos total */
-  unsigned int primerInodo;             /* Numero correspondiente al bloque del inodo raiz */
-  unsigned int numBloquesDatos;         /* Numero total de bloques de datos */
-  unsigned int primerBloqueDatos;       /* Numero correspondiente al primer bloque de datos */
-  unsigned int tamDispositivo;          /* Tamano del dispositivo en bytes*/
-  char relleno[PADDING_SB];             /* Relleno para completar un bloque */
+typedef struct TipoSuperbloque{
+  uint32_t numMagico;                 /* Numero magico del superbloque*/
+  uint8_t numInodos;                  /* Numero de inodos total */
+  uint8_t primerInodo;                /* Numero correspondiente al bloque del inodo raiz */
+  uint8_t numBloquesInodos;           /* Numero total de bloques de inodos */
+  uint8_t numBloquesDatos;            /* Numero total de bloques de datos */
+  uint8_t primerBloqueDatos;          /* Numero correspondiente al primer bloque de datos */
+  uint32_t tamDispositivo;            /* Tamano del dispositivo en bytes*/
+  char mapaBloques[numBloquesDatos];  /*Mapa de bloques de datos 100…0 (usado: b_map[x]=1 | libre: b_map[x]=0)*/
+  char mapaInodos[numInodos];         /*Mapa de inodos 100…0 (usado: i_map[x]=1 | libre: i_map[x]=0)*/
+  char relleno[PADDING_SUPERBLOQUE];  /* Relleno para completar un bloque */
 } TipoSuperbloque;
 
-typedef struct{
-  unsigned int tipo;                    /*  SOLO PUEDEN SER FICHEROS */
-  char nombre[32];                     /* Nombre del fichero asociado al inodo */
-  unsigned int inodosContenidos[200];   /* tipo==dir: lista de los inodosdel directorio HACE FALTAAAAAAAAAAA????????????????*/
-  unsigned int tamanyo;                 /* Tamanoo actual del fichero en bytes */
-  unsigned int bloqueDirecto;           /* Numero del bloque directo */
+typedef struct inodo{
+  uint8_t tipo;                         /* Fichero == 1, enlace blando == 0 */
+  char nombre[32+1];                    /* Nombre del fichero asociado al inodo o del enlace simbólico, +1 puesto que termina en 0 */
+  uint16_t tamanyo;                     /* Tamano de un fichero en bytes */
+  uint8_t bloqueDirecto[5];                /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
   char relleno[PADDING_INODO];          /* Relleno para completar un bloque */
 } inodo;
 
-typedef struct{
+typedef struct inodo_x{
   int posicion;                         /* Informacion extra de los inodos */
   int abierto;                          /* Informacion extra de los inodos */
 } inodo_x;
