@@ -17,39 +17,54 @@
 
 
 
+
+
+TipoSuperbloque superbloque;    //Declaramos el superbloque a usar
+TipoInodo inodos;				//Declaramos los inodos a usar
+int8_t montar = 0;             //indicamos si el dispositivo esta montado (0) o no (1)
+TipoInodo_x inodos_x;  		//Declaramos los inodos_x con informacion adicional que no deben guardarse en disco
+
 /********************************************************************************************/
 // En las diapositivas (Tema 4: 155 - 162) tambien estan estas 2 funciones para leer metadatos
 /********************************************************************************************/
 
-/*int metadata_fromDiskToMemory ( void ) {
- // leer bloque 0 de disco en sbloques[0]
- bread(DISK, 1, &(sbloques[0]) );
- // leer los bloques para el mapa de i-nodos
- for (int=0; i<sbloques[0].numBloquesMapaInodos; i++)
- 	bread(DISK, 2+i, ((char *)imap + i*BLOCK_SIZE) ;
- // leer los bloques para el mapa de bloques de datos
- for (int=0; i<sbloques[0].numBloquesMapaDatos; i++)
- 	bread(DISK, 2+i+sbloques[0].numBloquesMapaInodos, ((char *)dbmap + i*BLOCK_SIZE);
- // leer los i-nodos a memoria (en este diseño 1 inodo -> 1 bloque)
- for (int=0; i<(sbloques[0].numInodos*sizeof(TipoInodoDisco)/BLOCK_SIZE); i++)
- 	bread(DISK, i+sbloques[0].primerInodo, ((char *)inodos + i*BLOCK_SIZE);
- return 1;
-}*/
+int metadata_fromDiskToMemory ( void ) {
+	char buffer[BLOCK_SIZE] ;
 
-/*int metadata_fromMemoryToDisk ( void ) {
- // escribir bloque 0 de sbloques[0] a disco
- bwrite(DISK, 1, &(sbloques[0]) );
- // escribir los bloques para el mapa de i-nodos
- for (int=0; i<sbloques[0].numBloquesMapaInodos; i++)
- 	bwrite(DISK, 2+i, ((char *)imap + i*BLOCK_SIZE) ;
- // escribir los bloques para el mapa de bloques de datos
- for (int=0; i<sbloques[0].numBloquesMapaDatos; i++)
- 	bwrite(DISK, 2+i+sbloques[0].numBloquesMapaInodos, ((char *)dbmap + i*BLOCK_SIZE);
- // escribir los i-nodos a disco (en este diseño 1 inodo -> 1 bloque)
- for (int=0; i<(sbloques[0].numInodos*sizeof(TipoInodoDisco)/BLOCK_SIZE); i++)
- 	bwrite(DISK, i+sbloques[0].primerInodo, ((char *)inodos + i*BLOCK_SIZE);
- return 1;
-}*/
+	//leo el superbloque, el cual contiene mapas de inodos y datos
+	bread(DEVICE_IMAGE, 0, buffer);
+	memmove(&(superbloque), buffer, sizeof(TipoSuperbloque));
+
+	//leo todos los inodos a memoria, empiezan desde el bloque 1 (siendo el 0 el superbloque)
+	int inodosBloque = MAX_FICHEROS / superbloque.numBloquesInodos;
+	for (int i = 0; i < superbloque.numBloquesInodos; i++){
+
+		bread(DEVICE_IMAGE,superbloque.primerInodo + i, buffer);
+		memmove(&(inodos[i*inodosBloque]), buffer, inodosBloque*sizeof(TipoInodo));
+
+	}
+	
+ return 0;
+}
+
+int metadata_fromMemoryToDisk ( void ) {
+	char buffer[BLOCK_SIZE] ;
+
+	//guardamos en disco la informacion del superbloque (incluye mapas de inodos y bloques de datos)
+	memset(buffer, 0, BLOCK_SIZE) ;
+    memmove(b, &(superbloque), sizeof(TipoSuperbloque)) ;
+    bwrite(DEVICE_IMAGE, 0, buffer) ;
+
+	//escribimos los inodos a disco
+	int inodosBloque = MAX_FICHEROS / superbloque.numBloquesInodos;
+	for (int i=0; i < superbloque.numBloquesInodos; i++){
+		memset(buffer, 0, BLOCK_SIZE) ;
+    	memmove(buffer, &(inodos[i*inodosBloque]), sizeof(TipoInodo) * inodosBloque) ;
+    	bwrite(DEVICE_IMAGE, superbloque.primerInodo + i, buffer) ;
+	}
+
+ return 0;
+}
 
 /***********************/
 // Aqui empieza el codigo
@@ -62,22 +77,45 @@
 
 int mkFS(long deviceSize)
 {
-	
-	sbloques[0].numMagico = 12345; // ayuda a comprobar que se haya creado por nuestro mkfs
-	sbloques[0].numInodos = numInodo;
-	…
-	for (int=0; i<sbloques[0].numInodos; i++)
-		imap[i] = 0; // free
-	for (int=0; i<sbloques[0].numBloquesDatos; i++)
-		bmap[i] = 0; // free
-	for (int=0; i<sbloques[0].numInodos; i++)
+	if(deviceSize < MIN_DISCO){
+		printf("Tamaño del disco demasiado pequeño, el tamaño mínimo es %d", MIN_DISCO);
+		return -1;
+	}
+	if(deviceSize > MAX_DISCO){
+		printf("Tamaño del disco demasiado grande, el tamaño máximo es %d", MAX_DISCO);
+		return -1;
+	}
+
+	char buffer[BLOCK_SIZE];
+
+	superbloque.numMagico = 12345678; 		   	   // se utiliza para comprobar que se ha creado por nuestro mkfs
+	superbloque.numInodos = MAX_FICHEROS;          // el numero de inodos equivale al maximo de ficheros
+	superbloque.primerInodo = 1;
+	superbloque.numBloquesInodos = 2;
+	superbloque.numBloquesDatos = MAX_FICHEROS * MAX_FILE_SIZE / BLOCK_SIZE;
+	superbloque.primerBloqueDatos = 1 + superbloque.numBloquesInodos;
+	superbloque.tamDispositivo = deviceSize;
+
+	for (int i=0; i<superbloque.numInodos; i++){
+		superbloque.mapaInodos[i] = 0; // free
+	}
+	for (int i=0; i<superbloque.numBloquesDatos; i++){
+		superbloque.mapaBloques[i] = 0; // free
+	}
+	for (int i=0; i<superbloque.numInodos; i++){
 		memset(&(inodos[i]), 0, sizeof(TipoInodoDisco) );
+	}
 	
 	// to write the default file system into disk
 	metadata_fromMemoryToDisk();
-	return 1;*/
 
-	return -1;
+	memset(buffer, 0, BLOCK_SIZE);
+	for (int i = 0; i < superbloque.numBloquesDatos; i++){
+		bwrite(DEVICE_IMAGE, superbloque.primerBloqueDatos + i, buffer));
+	}
+
+	return 0;
+
 }
 
 /*
@@ -86,19 +124,19 @@ int mkFS(long deviceSize)
  */
 int mountFS(void)
 {
-	/*// si ya montado -> error
- 	if (1 == montado)
- 		return -1 ;
+	if (montar == 1){
+		return -1;
+	}
 
- 	// sincronizar metadatos
- 	metadata_fromDiskToMemory() ;
+	metadata_fromDiskToMemory();
 
- 	// montado
- 	montado = 1 ;
+	if(12345678 != superbloque.numMagico){
+		return -1;
+	}
 
- 	return 1 ;*/
+	montar = 1;
 
-	return -1;
+	return 0;
 }
 
 /*
@@ -107,21 +145,22 @@ int mountFS(void)
  */
 int unmountFS(void)
 {
-	/*// si hay algún fichero abierto -> error
-	for (int i=0; i<sbloques[0].numInodos; i++) {
-		if (1 == inodos_x[i].abierto)
-			return -1 ;
+
+	if (montar == 0){
+		return -1;
 	}
 
-	// sincronizar metadatos
+	for (int i = 0; i < superbloque.numInodos; i++){
+		if (inodos_x[i].abierto == 1){
+			return -1;
+		}
+	}
+
 	metadata_fromMemoryToDisk() ;
 
-	// desmontado
-	montado = 0 ;
+	montar = 0;
 
-	return 1 ;*/
-
-	return -1;
+	return 0;
 }
 
 /*
