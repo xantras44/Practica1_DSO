@@ -171,11 +171,27 @@ int removeFile(char *fileName)
 int openFile(char *fileName)
 {
 	/*int inodo_id ;
+
+	// Ontener inodo a partir del nombre.
 	inodo_id = namei(nombre) ;
+
 	if (inodo_id < 0)
 		return inodo_id ;
+
+	// Enlace blando, creo que va aquí, es lo que puso el profe (fotos).
+	if (inodo[inodo_id].type == enlace_simbolico) {
+		// obtener "enlace_bando -> nombre fichero apunto"
+		inodo_id = namei (name);
+		// Para detectar bucles en enlaces simbolicos.
+		if (inodo[inodo_id2].type == enlace_simbolico) {
+			return -1;
+		}
+		return openFile (nombre del fichero apuntado);
+	}
+
 	inodos_x[inodo_id].posicion = 0;
 	inodos_x[inodo_id].abierto = 1;
+
 	return inodo_id; */
 
 	return -2;
