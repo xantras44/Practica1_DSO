@@ -15,10 +15,7 @@
 #include "filesystem/auxiliary.h"  // Headers for auxiliary functions
 #include "filesystem/metadata.h"   // Type and structure declaration of the file system
 
-/*
- * @brief 	Generates the proper file system structure in a storage device, as designed by the student.
- * @return 	0 if success, -1 otherwise.
- */
+
 
 /********************************************************************************************/
 // En las diapositivas (Tema 4: 155 - 162) tambien estan estas 2 funciones para leer metadatos
@@ -58,9 +55,14 @@
 // Aqui empieza el codigo
 /***********************/
 
+/*
+ * @brief 	Generates the proper file system structure in a storage device, as designed by the student.
+ * @return 	0 if success, -1 otherwise.
+ */
+
 int mkFS(long deviceSize)
 {
-	/*// inicializar a los valores por defecto del superbloque, mapas e i-nodos
+	
 	sbloques[0].numMagico = 12345; // ayuda a comprobar que se haya creado por nuestro mkfs
 	sbloques[0].numInodos = numInodo;
 	…
