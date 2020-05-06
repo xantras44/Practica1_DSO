@@ -15,6 +15,8 @@
 #define LONG_NOMBRES 32         //Longitud maxima del nombre de un fichero o enlace simbólico segun NF2
 #define MIN_DISCO 460*1024      //Menor tamano disco segun NF6
 #define MAX_DISCO 600*1024      //Mayor tamano disco segun NF6
+#define t_archivo 1
+#define t_enlace 0
 
 #define T_ARCHIVO 1             //inodo de tipo archivo
 #define T_ENLACE 0              //inodo de tipo enlace
@@ -40,6 +42,7 @@ typedef struct TipoSuperbloque{
   char relleno[PADDING_SUPERBLOQUE];  /* Relleno para completar un bloque */
 } TipoSuperbloque;
 
+<<<<<<< HEAD
 typedef struct TipoInodo{
   uint8_t tipo;                        /* Fichero == 1, enlace blando == 0 */
   char nombre[LONG_NOMBRES+1];         /* Nombre del fichero asociado al inodo o del enlace simbólico, +1 puesto que termina en 0 */
@@ -53,3 +56,17 @@ typedef struct TipoInodo_x{
   uint16_t posicion;                        /* Informacion extra de los inodos, posicion de lectura o escritura */
   uint8_t abierto;                     /* Informacion extra de los inodos, 0 si no esta abierto y 1 si lo esta */
 } TipoInodo_x [MAX_FICHEROS];
+=======
+typedef struct inodo{
+  uint8_t tipo;                         /* Fichero == 1, enlace blando == 0 */
+  char nombre[LONG_NOMBRES+1];          /* Nombre del fichero asociado al inodo o del enlace simbólico, +1 puesto que termina en 0 */
+  uint16_t tamanyo;                     /* Tamano de un fichero en bytes */
+  uint8_t bloqueDirecto[5];                /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
+  char relleno[PADDING_INODO];          /* Relleno para completar un bloque */
+} inodo;
+
+typedef struct inodo_x{
+  uint16_t posicion;                         /* Informacion extra de los inodos */
+  uint8_t abierto;                          /* Informacion extra de los inodos */
+} inodo_x;
+>>>>>>> f0d31e7f6136d29b5dc8c73af8242c227bdd2faa
