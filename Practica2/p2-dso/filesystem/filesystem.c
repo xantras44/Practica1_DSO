@@ -167,42 +167,63 @@ int unmountFS(void)
  * @brief	Creates a new file, provided it it doesn't exist in the file system.
  * @return	0 if success, -1 if the file already exists, -2 in case of error.
  */
-int createFile(char *fileName)
+int createFile(char *nombre)
 {
-	/*int b_id, inodo_id ;
-	inodo_id = ialloc() ;
-	if (inodo_id < 0) { return inodo_id ; }
+	//para crear el fichero voy a pedir tanto un bloque libre (alloc) como un inodo (ialloc), por lo que declaro 2 id's
+	int id_inodo ;
 
-	// para este diseño: preallocation
-	b_id = alloc();
-	if (b_id < 0) { ifree(inodo_id); return b_id ; }
+	id_inodo = namei(nombre);   //Compruebo que no exista ya un fichero con ese nombre usando namei()
+	if(id_inodo >= 0){			//Dara error si namei devuelve un valor mayor o igual a 0 (id del inodo cuyo fichero coincide en nombre)
+		return -1;
+	}
 
-	inodos[inodo_id].tipo = 1 ; // FICHERO
-	strcpy(inodos[inodo_id].nombre, nombre);
-	inodos[inodo_id].bloqueDirecto = b_id ;
-	inodos_x[inodo_id].posicion = 0;
-	inodos_x[inodo_id].abierto = 1;
-	return inodo_id;*/
+	//Pido un inodo libre con ialloc()
+	id_inodo = ialloc() ;
+	if (id_inodo < 0) { 		//Si ialloc devuelve un valor menor a 0 (ha devuelto -1 puesto que no hay libres) devuelvo -1 el id (-1)
+		return id_inodo ;
+		 }
 
-	return -2;
+	/*En este punto podríamos haber llamado a alloc y comprobar si hay un bloque libre y asociarlo al bloque directo del inodo
+	No obstante, preferimos asignar el bloque cuando se vaya a escribir por primera vez en el, por lo que le asignaremos un valor 
+	mayor al total de bloques que tenemos */
+
+/*	id_bloque = alloc();
+	if (id_bloque < 0){           *****EL OTRO CASO***
+		ifree(id_inodo);
+		return -2;
+	}
+
+	inodos[id_inodo].bloqueDirecto[0] = id_bloque ;
+
+*/
+	inodos[id_inodo].tipo = T_FICHERO ; 		// es de tipo fichero
+	strcpy(inodos[id_inodo].nombre, nombre);    // asigno el nombre al inodo
+	inodos[id_inodo].bloqueDirecto[0] = 255 ;   // asigno un bloque directo no valido por el momento
+	inodos_x[id_inodo].posicion = 0;			// establezco el puntero a 0
+	inodos_x[id_inodo].abierto = 1;				// marco el inodo como abierto
+	return id_inodo;
+
 }
 
 /*
  * @brief	Deletes a file, provided it exists in the file system.
  * @return	0 if success, -1 if the file does not exist, -2 in case of error..
  */
-int removeFile(char *fileName)
+int removeFile(char *nombre)
 {
-	/*int inodo_id ;
-	inodo_id = namei(nombre) ;
-	if (inodo_id < 0)
-		return inodo_id ;
-	free(inodos[inodo_id].bloqueDirecto);
-	memset( &(inodos[inodo_id]), 0, sizeof(TipoInodoDisco) ) ;
-	ifree(inodo_id) ;
-	return 1; */
+	int id_inodo ;
 
-	return -2;
+	id_inodo = namei(nombre);   //Compruebo que exista ya un fichero con ese nombre usando namei()
+	if(id_inodo < 0){			//Dara error si namei devuelve un valor menor a 0, puesto que para borrar un fichero debe existir
+		return -1;
+	}
+
+	free(inodos[id_inodo].bloqueDirecto[0]);         		 // Libero el primer bloque directo
+	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 // pongo todos los valores del inodo a 0
+	ifree(id_inodo) ;										 // Libero el inodo		
+	
+	return 0; 
+
 }
 
 /*
