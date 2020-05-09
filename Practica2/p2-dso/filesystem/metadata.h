@@ -43,7 +43,7 @@ typedef struct TipoSuperbloque{
 typedef struct TipoInodo{
   uint8_t tipo;                        /* Fichero == 1, enlace blando == 0 */
   char nombre[LONG_NOMBRES+1];         /* Nombre del fichero asociado al inodo o del enlace simbólico, +1 puesto que termina en 0 */
-  uint16_t tamanyo;                    /* Tamano de un fichero en bytes */
+  uint16_t tamano;                     /* Tamano actual del fichero en bytes */
   uint8_t bloqueDirecto[5];            /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
   char relleno[PADDING_INODO];         /* Relleno para completar un bloque */
 } TipoInodo [MAX_FICHEROS];

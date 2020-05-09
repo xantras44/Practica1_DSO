@@ -170,7 +170,7 @@ int unmountFS(void)
 int createFile(char *nombre)
 {
 	//para crear el fichero voy a pedir tanto un bloque libre (alloc) como un inodo (ialloc), por lo que declaro 2 id's
-	int id_inodo ;
+	int id_inodo, id_bloque ;
 
 	id_inodo = namei(nombre);   //Compruebo que no exista ya un fichero con ese nombre usando namei()
 	if(id_inodo >= 0){			//Dara error si namei devuelve un valor mayor o igual a 0 (id del inodo cuyo fichero coincide en nombre)
@@ -183,24 +183,27 @@ int createFile(char *nombre)
 		return id_inodo ;
 		 }
 
-	/*En este punto podríamos haber llamado a alloc y comprobar si hay un bloque libre y asociarlo al bloque directo del inodo
-	No obstante, preferimos asignar el bloque cuando se vaya a escribir por primera vez en el, por lo que le asignaremos un valor 
-	mayor al total de bloques que tenemos */
-
-/*	id_bloque = alloc();
-	if (id_bloque < 0){           *****EL OTRO CASO***
-		ifree(id_inodo);
+	//Miramos que haya bloques libres con alloc()
+	id_bloque = alloc();
+	if (id_bloque < 0){           
+		ifree(id_inodo);          		//Si no hay bloques libres libero el inodo que acabo de crear        
 		return -2;
 	}
 
 	inodos[id_inodo].bloqueDirecto[0] = id_bloque ;
 
-*/
-	inodos[id_inodo].tipo = T_FICHERO ; 		// es de tipo fichero
-	strcpy(inodos[id_inodo].nombre, nombre);    // asigno el nombre al inodo
-	inodos[id_inodo].bloqueDirecto[0] = 255 ;   // asigno un bloque directo no valido por el momento
-	inodos_x[id_inodo].posicion = 0;			// establezco el puntero a 0
-	inodos_x[id_inodo].abierto = 1;				// marco el inodo como abierto
+
+	inodos[id_inodo].tipo = T_FICHERO ; 				// es de tipo fichero
+	strcpy(inodos[id_inodo].nombre, nombre);    		// asigno el nombre al inodo
+	inodos[id_inodo].bloqueDirecto[0] = id_bloque ;   	// asigno el primer bloque directo
+
+	for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){  /* El resto de bloques directos (habra tantos como tamano fichero entre 
+															tamano bloque) los asigno a un valor no valido por el momento*/
+		inodos[id_inodo].bloqueDirecto[i] = 255;
+	}
+
+	inodos_x[id_inodo].posicion = 0;					// establezco el puntero a 0
+	inodos_x[id_inodo].abierto = 1;						// marco el inodo como abierto
 	return id_inodo;
 
 }
@@ -218,9 +221,12 @@ int removeFile(char *nombre)
 		return -1;
 	}
 
-	free(inodos[id_inodo].bloqueDirecto[0]);         		 // Libero el primer bloque directo
-	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 // pongo todos los valores del inodo a 0
-	ifree(id_inodo) ;										 // Libero el inodo		
+	for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){
+		free(inodos[id_inodo].bloqueDirecto[i]);         		// Libero los bloques directos asociados
+	}
+
+	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 	// pongo todos los valores del inodo a 0
+	ifree(id_inodo) ;										 	// Libero el inodo		
 	
 	return 0; 
 
@@ -230,95 +236,138 @@ int removeFile(char *nombre)
  * @brief	Opens an existing file.
  * @return	The file descriptor if possible, -1 if file does not exist, -2 in case of error..
  */
-int openFile(char *fileName)
+int openFile(char *nombre)
 {
-	/*int inodo_id ;
+	int id_inodo ;
 
-	// Ontener inodo a partir del nombre.
-	inodo_id = namei(nombre) ;
+	// Obtenemos el inodo asociado al nombre propuesto.
+	id_inodo = namei(nombre) ;
 
-	if (inodo_id < 0)
-		return inodo_id ;
+	if (id_inodo < 0){
+		return id_inodo ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
+	}
 
-	// Enlace blando, creo que va aquí, es lo que puso el profe (fotos).
-	if (inodo[inodo_id].type == enlace_simbolico) {
-		// obtener "enlace_bando -> nombre fichero apunto"
-		inodo_id = namei (name);
-		// Para detectar bucles en enlaces simbolicos.
-		if (inodo[inodo_id2].type == enlace_simbolico) {
+	if (inodos_x[id_inodo].abierto == 1){
+		return -2;								//Si ya esta abierto devuelvo -2 (error)
+	}
+	// Compruebo si el inodo es de tipo enlace blando
+	/*if (inodo[id_inodo].type == T_ENLACE) {
+		// Para detectar bucles en enlaces simbolicos.       
+		if (inodo[inodo_id2].type == T_ENLACE) {
 			return -1;
 		}
 		return openFile (nombre del fichero apuntado);
-	}
+	}*/
 
-	inodos_x[inodo_id].posicion = 0;
+	inodos_x[inodo_id].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
 	inodos_x[inodo_id].abierto = 1;
 
-	return inodo_id; */
+	return inodo_id; 
 
-	return -2;
 }
 
 /*
  * @brief	Closes a file.
  * @return	0 if success, -1 otherwise.
  */
-int closeFile(int fileDescriptor)
+int closeFile(int descriptor)
 {
-	/*if (fd < 0)
-		return fd ;
-	inodos_x[fd].posicion = 0;
-	inodos_x[fd].abierto = 0;
-	return 1;*/
+	if (descriptor < 0 || (descriptor >= superbloque.numInodos)){
+		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
+	}
 
-	return -1;
+
+	inodos_x[fd].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
+	inodos_x[fd].abierto = 0;
+
+	return 0;
+
 }
 
 /*
  * @brief	Reads a number of bytes from a file and stores them in a buffer.
  * @return	Number of bytes properly read, -1 in case of error.
  */
-int readFile(int fileDescriptor, void *buffer, int numBytes)
+int readFile(int descriptor, void *buffer, int size)
 {
-	/*char b[BLOCK_SIZE] ;
-	int b_id ;
-	if (inodos_x[fd].posicion+size > inodos[fd].size)
-		size = inodos[fd].size - inodos_x[fd].posicion;
-	if (size <= 0)
-		return 0;
-	b_id = bmap(fd, inodos_x[fd].posicion);
-	bread(DISK, sbloques[0].primerBloqueDatos+b_id, b);
+	char b[BLOCK_SIZE] ;
+	int id_bloque ;
 
-	// si (1 bloque) entonces [..].posicion => desplazamiento en bloque
-	memmove(buffer, b+inodos_x[fd].posicion, size);
+	if (descriptor < 0 || (descriptor >= superbloque.numInodos)){
+		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
+	}
 
-	inodos_x[fd].posicion += size;
-	return size;*/
+	if (inodos_x[descriptor].posicion + size > inodos[descriptor].tamano){
+		size = inodos[fd].size - inodos_x[fd].posicion;     //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
+	}
 
-	return -1;
+	if (size <= 0){
+		return 0;         // Devuelvo 0 si no queda nada por leer
+	}
+
+	id_bloque = bmap(descriptor, inodos_x[descriptor].posicion);          //LLamamos a bmap para obtener el id del bloque correspondiente
+
+	if(id_bloque < 0){
+		return -1;         //Si el id del bloque no es valido devuelve error
+	}
+
+	bread(DISK, superbloque.primerBloqueDatos+id_bloque, b);     // Si no lee la informacion pedida
+
+	
+	memmove(buffer, b+inodos_x[descriptor].posicion, size); 	 // Guarda la informacion en el buffer proporcionado
+
+	inodos_x[descriptor].posicion += size;						 // Ajusta el puntero de posicion
+
+	return size;		//Devuelve el numero de bytes leidos
+
 }
 
 /*
  * @brief	Writes a number of bytes from a buffer and into a file.
  * @return	Number of bytes properly written, -1 in case of error.
  */
-int writeFile(int fileDescriptor, void *buffer, int numBytes)
+int writeFile(int descriptor, void *buffer, int size)
 {
-	/*char b[BLOCK_SIZE] ;
-	int b_id ;
-	if (inodos_x[fd].posicion+size > BLOCK_SIZE)
-		size = BLOCK_SIZE - inodos_x[fd].posicion;
-	if (size =< 0)
-		return 0;
-	b_id = bmap(fd, inodos_x[fd].posicion);
-	bread(DISK, sbloques[0].primerBloqueDatos+b_id, b);
-	memmove(b+inodos_x[fd].posicion, buffer, size);
-	bwrite(DISK, sbloques[0].primerBloqueDatos+b_id, b);
-	inodos_x[fd].posicion += size;
-	inodos[fd].size += size;
-	return size;*/
+	char b[BLOCK_SIZE] ;
+	int id_bloque ;
 
-	return -1;
+	if (descriptor < 0 || (descriptor >= superbloque.numInodos)){
+		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
+	}
+
+	if (inodos_x[descriptor].posicion+size > BLOCK_SIZE){   /***********QUIZA ES TAMANO FICHERO NO BLOQUE************/
+		size = BLOCK_SIZE - inodos_x[descriptor].posicion;  //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
+	}
+
+	if (size =< 0){
+		return 0;			// Devuelvo 0 si no queda hueco para escribir
+	}
+ 
+	id_bloque = bmap(descriptor, inodos_x[descriptor].posicion);    // busco el bloque con bmap
+	if(id_bloque == 255){
+		id_bloque = alloc();                  	//Si el bloque estaba reservado para el inodo pido un bloque vacio
+		if (id_bloque < 0){
+			return -1;
+		}
+		for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){ 
+															
+			if(inodos[descriptor].bloqueDirecto[i] == 255){
+				inodos[descriptor].bloqueDirecto[i] = id_bloque;        /*Si hay un bloque disponible se lo asigno al inodo en su
+																		posicion correspondiente*/
+			}
+	}
+		
+	}
+
+	bread(DISK, superbloque.primerBloqueDatos+id_bloque, b);
+	memmove(b+inodos_x[descriptor].posicion, buffer, size);           //Modifico los datos con la informacion proporcionada
+	bwrite(DISK, superbloque.primerBloqueDatos+id_bloque, b);
+
+	inodos_x[descriptor].posicion += size;							  // ajusto el puntero
+	inodos[descriptor].size += size;								  // aumento el tamano de este fichero
+
+	return size;						//Devuelve el numero de bytes escritos
+
 }
 
 /*
