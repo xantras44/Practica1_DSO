@@ -15,14 +15,107 @@
 #include "filesystem/auxiliary.h"  // Headers for auxiliary functions
 #include "filesystem/metadata.h"   // Type and structure declaration of the file system
 
+#include <string.h>
 
-
-
-
+//DECLARACIONES NECESARIAS
 TipoSuperbloque superbloque;    //Declaramos el superbloque a usar
 TipoInodo inodos;				//Declaramos los inodos a usar
 int8_t montar = 0;             //indicamos si el dispositivo esta montado (0) o no (1)
 TipoInodo_x inodos_x;  		//Declaramos los inodos_x con informacion adicional que no deben guardarse en disco
+
+/*INICIO FUNCIONES AUXILIARES*/
+
+int ialloc ( void )
+{
+ // cogemos el primer i-nodo libre
+ for (int i = 0; i < superbloque.numInodos; i++) {
+    if (superbloque.mapaInodos[i] == 0) {
+        superbloque.mapaInodos[i] = 1; // cambiamos el estado del inodo a ocupado
+
+
+        // le ponemos los valores por defecto al inodo AAAAAAAAAAAAAAAAAAAAAAAA
+        memset(&(inodos[i]),0, sizeof(TipoInodo));
+
+
+        return i; // devolvemos el identificador del inodo.
+    }
+ }
+ return -1;
+}
+
+int alloc ( void )
+{
+ char b[BLOCK_SIZE];
+ // cogemos el primer bloque libre
+ for (int i =0; i<superbloque.numBloquesDatos; i++) {
+    if (superbloque.mapaBloques[i] == 0) {
+        superbloque.mapaBloques[i] = 1 ; // cambiamos el estado del bloque a ocupado.
+        // le ponemos los valores por defecto al bloque (opcional).
+        memset(b, 0, BLOCK_SIZE) ;
+        bwrite(DEVICE_IMAGE, superbloque.primerBloqueDatos + i, b);
+        return i ; // devolvemos el identificador del bloque.
+    }
+ }
+ return -1;
+}
+
+int ifree ( int inodo_id )
+{
+    // comprobamos si el identificador del inodo es valido.
+    if (inodo_id > superbloque.numInodos)
+    return -1;
+    // liberamos el inodo
+    superbloque.mapaInodos[inodo_id] = 0;
+    return -1;
+}
+
+int bfree ( int block_id )
+{
+    // comprobamos si el identificador del bloque es valido.
+    if (block_id > superbloque.numBloquesDatos)
+    return -1;
+    // liberamos el bloque
+    superbloque.mapaBloques[block_id] = 0;
+    return -1;
+}
+
+int bmap ( int inodo_id, int offset )
+{
+	return 0;
+    /*int b[BLOCK_SIZE/4] ;
+    int bloque_logico ;
+    if (inodo_id > superbloque.numInodos) {
+        return -1;
+    }
+    bloque_logico = offset / BLOCK_SIZE;
+
+
+    // AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    // Por qué es 1+BLOCK_SIZE
+    if (bloque_logico > (1+BLOCK_SIZE/4))
+        return -1;
+
+
+
+    // bloque de datos físico asociado: directo
+    if (0 == bloque_logico)
+        return inodos[0].bloqueDirecto[inodo_id];
+    return b[bloque_logico - 1] ; // hay 1 bloque directo -> x-1*/
+}
+
+int namei ( char *fname )
+{
+ // buscamos el inodo cuyo nombre sea <fname>
+ for (int i =0; i<superbloque.numInodos; i++) {
+    if (! strcmp(inodos[i].nombre, fname))
+        return i;
+ }
+ return -1;
+}
+
+
+/*FIN FUNCIONES AUXILIARES*/
+
 
 /********************************************************************************************/
 // En las diapositivas (Tema 4: 155 - 162) tambien estan estas 2 funciones para leer metadatos
@@ -52,7 +145,7 @@ int metadata_fromMemoryToDisk ( void ) {
 
 	//guardamos en disco la informacion del superbloque (incluye mapas de inodos y bloques de datos)
 	memset(buffer, 0, BLOCK_SIZE) ;
-    memmove(b, &(superbloque), sizeof(TipoSuperbloque)) ;
+    memmove(buffer, &(superbloque), sizeof(TipoSuperbloque)) ;
     bwrite(DEVICE_IMAGE, 0, buffer) ;
 
 	//escribimos los inodos a disco
@@ -86,8 +179,10 @@ int mkFS(long deviceSize)
 		return -1;
 	}
 
-	char buffer[BLOCK_SIZE];
 
+	//char buffer[BLOCK_SIZE];
+	//printf("%ld", sizeof(superbloque));
+	printf("%ld", sizeof(inodos[0]));
 	superbloque.numMagico = 12345678; 		   	   // se utiliza para comprobar que se ha creado por nuestro mkfs
 	superbloque.numInodos = MAX_FICHEROS;          // el numero de inodos equivale al maximo de ficheros
 	superbloque.primerInodo = 1;
@@ -103,16 +198,17 @@ int mkFS(long deviceSize)
 		superbloque.mapaBloques[i] = 0; // free
 	}
 	for (int i=0; i<superbloque.numInodos; i++){
-		memset(&(inodos[i]), 0, sizeof(TipoInodoDisco) );
+		memset(&(inodos[i]), 0, sizeof(TipoInodo) );
+		printf("%d", inodos[i].tipo);
 	}
 	
 	// to write the default file system into disk
-	metadata_fromMemoryToDisk();
+	/*metadata_fromMemoryToDisk();
 
 	memset(buffer, 0, BLOCK_SIZE);
 	for (int i = 0; i < superbloque.numBloquesDatos; i++){
-		bwrite(DEVICE_IMAGE, superbloque.primerBloqueDatos + i, buffer));
-	}
+		bwrite(DEVICE_IMAGE, superbloque.primerBloqueDatos + i, buffer);
+	}*/
 
 	return 0;
 
@@ -222,7 +318,7 @@ int removeFile(char *nombre)
 	}
 
 	for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){
-		free(inodos[id_inodo].bloqueDirecto[i]);         		// Libero los bloques directos asociados
+		bfree(inodos[id_inodo].bloqueDirecto[i]);         		// Libero los bloques directos asociados
 	}
 
 	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 	// pongo todos los valores del inodo a 0
@@ -259,10 +355,10 @@ int openFile(char *nombre)
 		return openFile (nombre del fichero apuntado);
 	}*/
 
-	inodos_x[inodo_id].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
-	inodos_x[inodo_id].abierto = 1;
+	inodos_x[id_inodo].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
+	inodos_x[id_inodo].abierto = 1;
 
-	return inodo_id; 
+	return id_inodo; 
 
 }
 
@@ -277,8 +373,8 @@ int closeFile(int descriptor)
 	}
 
 
-	inodos_x[fd].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
-	inodos_x[fd].abierto = 0;
+	inodos_x[descriptor].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
+	inodos_x[descriptor].abierto = 0;
 
 	return 0;
 
@@ -291,6 +387,7 @@ int closeFile(int descriptor)
 int readFile(int descriptor, void *buffer, int size)
 {
 	char b[BLOCK_SIZE] ;
+	char aux [BLOCK_SIZE];
 	int id_bloque ;
 
 	if (descriptor < 0 || (descriptor >= superbloque.numInodos)){
@@ -298,27 +395,63 @@ int readFile(int descriptor, void *buffer, int size)
 	}
 
 	if (inodos_x[descriptor].posicion + size > inodos[descriptor].tamano){
-		size = inodos[fd].size - inodos_x[fd].posicion;     //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
+		size = inodos[descriptor].tamano - inodos_x[descriptor].posicion;     //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
 	}
 
 	if (size <= 0){
 		return 0;         // Devuelvo 0 si no queda nada por leer
 	}
 
-	id_bloque = bmap(descriptor, inodos_x[descriptor].posicion);          //LLamamos a bmap para obtener el id del bloque correspondiente
+	int actual = inodos_x[descriptor].posicion / BLOCK_SIZE;
+	int leido = 0;
+	while(size > 0){
 
-	if(id_bloque < 0){
-		return -1;         //Si el id del bloque no es valido devuelve error
+		id_bloque = bmap(descriptor, inodos_x[descriptor].posicion);          //LLamamos a bmap para obtener el id del bloque correspondiente
+
+		if(id_bloque < 0){
+			return -1;         //Si el id del bloque no es valido devuelve error
+		}
+
+		if ((inodos_x[descriptor].posicion + size / BLOCK_SIZE) >= (actual + 1)){
+			int leer = (actual + 1) * BLOCK_SIZE - inodos_x[descriptor].posicion;
+
+			int posActual =	inodos_x[descriptor].posicion % BLOCK_SIZE;  // calcula la posicion con respecto al tamano del bloque 
+
+			bread(DEVICE_IMAGE, superbloque.primerBloqueDatos+id_bloque, b);     // lee el bloque y lo guarda en el buffer
+
+			memmove(aux, b+posActual, leer); 	 /* Guarda la informacion en el buffer proporcionado usando lo almacenado en el 
+													buffer b, como este es de tamano BLOCK SIZE y el puntero va hasta el tamano
+													del fichero uso posActual, que es la posicion del puntero relativa al tamano bloque*/
+
+			inodos_x[descriptor].posicion += leer;						 // Ajusta el puntero de posicion
+
+			strcat(buffer, aux);										// guarda en el buffer a devolver la informacion que quiere
+
+			size -= leer;												// ajusta size por si queda algo que leer de otro bloque
+
+			actual += 1;												// ajusta el bloque actual
+
+			leido += leer;												// encargado de mantener cuanto se ha leido
+		}
+
+		bread(DEVICE_IMAGE, superbloque.primerBloqueDatos+id_bloque, b);
+
+		int posActual =	inodos_x[descriptor].posicion % BLOCK_SIZE;        // calcula la posicion con respecto al tamano del bloque
+
+		memmove(aux, b+posActual, size);			/* Guarda la informacion en el buffer proporcionado usando lo almacenado en el 
+													buffer b, como este es de tamano BLOCK SIZE y el puntero va hasta el tamano
+													del fichero uso posActual, que es la posicion del puntero relativa al tamano bloque*/
+
+		inodos_x[descriptor].posicion += size;						 // Ajusta el puntero de posicion
+
+		size -= size;												// ajusta size para acabar el bucle
+
+		strcat(buffer, aux);										// guarda en el buffer a devolver la informacion que quiere
+
+		leido += size;												// encargado de mantener cuanto se ha leido
 	}
-
-	bread(DISK, superbloque.primerBloqueDatos+id_bloque, b);     // Si no lee la informacion pedida
-
 	
-	memmove(buffer, b+inodos_x[descriptor].posicion, size); 	 // Guarda la informacion en el buffer proporcionado
-
-	inodos_x[descriptor].posicion += size;						 // Ajusta el puntero de posicion
-
-	return size;		//Devuelve el numero de bytes leidos
+	return leido;		//Devuelve el numero de bytes leidos
 
 }
 
@@ -339,7 +472,7 @@ int writeFile(int descriptor, void *buffer, int size)
 		size = BLOCK_SIZE - inodos_x[descriptor].posicion;  //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
 	}
 
-	if (size =< 0){
+	if (size <= 0){
 		return 0;			// Devuelvo 0 si no queda hueco para escribir
 	}
  
@@ -359,12 +492,12 @@ int writeFile(int descriptor, void *buffer, int size)
 		
 	}
 
-	bread(DISK, superbloque.primerBloqueDatos+id_bloque, b);
+	bread(DEVICE_IMAGE, superbloque.primerBloqueDatos+id_bloque, b);
 	memmove(b+inodos_x[descriptor].posicion, buffer, size);           //Modifico los datos con la informacion proporcionada
-	bwrite(DISK, superbloque.primerBloqueDatos+id_bloque, b);
+	bwrite(DEVICE_IMAGE, superbloque.primerBloqueDatos+id_bloque, b);
 
 	inodos_x[descriptor].posicion += size;							  // ajusto el puntero
-	inodos[descriptor].size += size;								  // aumento el tamano de este fichero
+	inodos[descriptor].tamano += size;								  // aumento el tamano de este fichero
 
 	return size;						//Devuelve el numero de bytes escritos
 
@@ -435,3 +568,6 @@ int removeLn(char *linkName)
 {
     return -2;
 }
+
+
+
