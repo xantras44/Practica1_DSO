@@ -379,7 +379,7 @@ int closeFile(int descriptor)
 	}
 
 	if (inodos_x[descriptor].abierto == 0){
-		return -1;									//Si ya está abicerradoerto no lo vuelvo a cerrar
+		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
 	}
 
 	inodos_x[descriptor].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
@@ -625,33 +625,22 @@ int lseekFile(int descriptor, long offset, int whence)
 
 int checkFile (char * fileName)
 {
-
-	// Creo que si el nombre del fichero es un puntero, nuestro atributo también tendría que serlo.
-
-	// Comprobamos que existe un fichero con ese nombre y, en caso afirmativo, nos guardamos su indice.
-	int indice = -2;
-	for (int i = 0; i < MAX_FICHEROS; i++) {
-		if (inodos[i].nombre == fileName) {
-			indice = i;
-			// Si el fichero está abierto: Error.
-			if (inodos_x[indice].abierto == 1){
-				return -2;
-			}
-		}
+	// Comprobamos que existe un fichero con ese nombre.
+	int id_inodo ;
+	
+	// Obtenemos el inodo asociado al nombre propuesto.
+	id_inodo = namei(fileName) ;
+	if (id_inodo < 0){
+		return -2 ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
 	}
 
-	// Si no existe ningun fichero con ese nombre: Error.
-	if (indice == -2) {
-		return -2;
-	}
-
-	uint32_t hashFichParam = inodos[indice].integridad;
+	uint32_t hashFichParam = inodos[id_inodo].integridad;
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
-	for (int i = 0; i < ceil(inodos[indice].tamano) / BLOCK_SIZE; i++) {
-		hash += CRC32 (inodos[indice].bloqueDirecto[i], strlen(inodos[indice].bloqueDirecto[i]));
-		// uint32_t hash = CRC32 (inodos[indice].bloqueDirecto[0], inodos[indice].tamano);
+	for (int i = 0; i < ceil(inodos[id_inodo].tamano) / BLOCK_SIZE; i++) {
+		hash += CRC32 (inodos[id_inodo].bloqueDirecto[i], strlen(inodos[id_inodo].bloqueDirecto[i]));
+		// uint32_t hash = CRC32 (inodos[id_inodo].bloqueDirecto[0], inodos[id_inodo].tamano);
 		hashFich += hash;
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
@@ -677,29 +666,24 @@ int checkFile (char * fileName)
 
 int includeIntegrity (char * fileName)
 {
-	// Comprobamos que existe un fichero con ese nombre y, en caso afirmativo, nos guardamos su indice.
-	int indice = -2;
-	for (int i = 0; i < MAX_FICHEROS; i++) {
-		if (inodos[i].nombre == fileName) {
-			indice = i;
-			// Si el fichero ya tiene integridad: Error.
-			if (inodos[indice].integridad != 0){
-				return -2;
-			}
-		}
+	int id_inodo ;
+	
+	// Obtenemos el inodo asociado al nombre propuesto.
+	id_inodo = namei(fileName) ;
+	if (id_inodo < 0){
+		return id_inodo ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
 	}
 
-	// Si no existe ningun fichero con ese nombre: Error.
-	if (indice == -2) {
-		return -1;
+	if (inodos[id_inodo].integridad != 0){
+		return -2;
 	}
 
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
-	for (int i = 0; i < ceil(inodos[indice].tamano) / BLOCK_SIZE; i++) {
-		hash += CRC32 (inodos[indice].bloqueDirecto[i], strlen(inodos[indice].bloqueDirecto[i]));
-		// uint32_t hash = CRC32 (inodos[indice].bloqueDirecto[0], inodos[indice].tamano);
+	for (int i = 0; i < ceil(inodos[id_inodo].tamano) / BLOCK_SIZE; i++) {
+		hash += CRC32 (inodos[id_inodo].bloqueDirecto[i], strlen(inodos[id_inodo].bloqueDirecto[i]));
+		// uint32_t hash = CRC32 (inodos[id_inodo].bloqueDirecto[0], inodos[id_inodo].tamano);
 		hashFich += hash;
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
@@ -708,7 +692,7 @@ int includeIntegrity (char * fileName)
 	}
 
 	// Le añadimos la integridad al fichero.
-	inodos[indice].integridad = hashFich;
+	inodos[id_inodo].integridad = hashFich;
 
     return 0;
 }
@@ -719,8 +703,47 @@ int includeIntegrity (char * fileName)
  */
 int openFileIntegrity(char *fileName)
 {
+	int id_inodo ;
+	
+	// Obtenemos el inodo asociado al nombre propuesto.
+	id_inodo = namei(fileName) ;
+	if (id_inodo < 0){
+		return id_inodo ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
+	}
 
-    return -2;
+
+	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	// En openFile se devuelve -2 pero aquí se devuelve -3 segun el enunciado.
+	if (inodos_x[id_inodo].abierto == 1){
+		return -3;								//Si ya esta abierto devuelvo -2 (error)
+	}
+	
+
+	// Comprobamos si el fichero tiene integridad.
+	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+	// Comprobar si se comprueba así.
+	if (inodos[id_inodo].integridad == 0) {
+		return -3;
+	}
+	
+	// Si tiene integridad, comprobamos que no este corrupto.
+	int integridad = checkFile(fileName);
+	if (integridad == -1) {
+		return -2;
+	}
+	// Compruebo si el inodo es de tipo enlace blando
+	/*if (inodo[id_inodo].type == T_ENLACE) {
+		// Para detectar bucles en enlaces simbolicos.       
+		if (inodo[inodo_id2].type == T_ENLACE) {
+			return -1;
+		}
+		return openFile (nombre del fichero apuntado);
+	}*/
+
+	inodos_x[id_inodo].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
+	inodos_x[id_inodo].abierto = 1;
+	
+	return id_inodo; 
 }
 
 /*
@@ -729,7 +752,32 @@ int openFileIntegrity(char *fileName)
  */
 int closeFileIntegrity(int fileDescriptor)
 {
-    return -1;
+	if (fileDescriptor < 0 || (fileDescriptor >= superbloque[0].numInodos)){
+		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
+	}
+	
+
+	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
+	uint32_t hashFich = 0;
+	uint32_t hash = 0;
+	for (int i = 0; i < ceil(inodos[fileDescriptor].tamano) / BLOCK_SIZE; i++) {
+		hash += CRC32 (inodos[fileDescriptor].bloqueDirecto[i], strlen(inodos[fileDescriptor].bloqueDirecto[i]));
+		// uint32_t hash = CRC32 (inodos[fileDescriptor].bloqueDirecto[0], inodos[fileDescriptor].tamano);
+		hashFich += hash;
+		// Si se ha dado un error al calcular la integriad del bloque: Error.
+		if (hash == 0) {
+			return -2;
+		}
+	}
+
+	if (inodos_x[fileDescriptor].abierto == 0){
+		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
+	}
+
+	inodos_x[fileDescriptor].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
+	inodos_x[fileDescriptor].abierto = 0;
+
+	return 0;
 }
 
 /*
