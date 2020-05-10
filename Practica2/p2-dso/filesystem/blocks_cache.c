@@ -47,7 +47,6 @@ int bread(char *deviceName, int blockNumber, char *buffer) {
 		read_result = read(fd, buffer+total_read, BLOCK_SIZE-total_read);
 		total_read = total_read + read_result;
 	} while(total_read < BLOCK_SIZE && read_result >= 0);
-
 	close(fd);
 
 	return 0;

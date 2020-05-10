@@ -15,7 +15,7 @@
 #define LONG_NOMBRES 32         //Longitud maxima del nombre de un fichero o enlace simbólico segun NF2
 #define MIN_DISCO 460*1024      //Menor tamano disco segun NF6
 #define MAX_DISCO 600*1024      //Mayor tamano disco segun NF6
-#define PADDING_SUPERBLOQUE 1747  // Relleno necesario para el superbloque
+#define PADDING_SUPERBLOQUE 1743  // Relleno necesario para el superbloque
 #define PADDING_INODO 272         // Relleno para cada bloque de inodos
 #define NUMBLOQUESDATOS MAX_FICHEROS * 10240 / 2048 
 
