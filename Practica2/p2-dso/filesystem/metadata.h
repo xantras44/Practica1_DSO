@@ -43,6 +43,8 @@ typedef struct{
   char relleno[PADDING_SUPERBLOQUE];  /* Relleno para completar un bloque */
 } TipoSuperbloque;
 
+TipoSuperbloque superbloque[1];
+
 typedef struct {
   uint8_t tipo;                        /* Fichero == 1, enlace blando == 0 */
   char nombre[LONG_NOMBRES];           /* Nombre del fichero asociado al inodo  */
@@ -50,10 +52,13 @@ typedef struct {
   uint16_t tamano;                     /* Tamano actual del fichero en bytes */
   uint8_t bloqueDirecto[5];            /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
   //char relleno[PADDING_INODO];         /* Relleno para completar un bloque */
-} TipoInodo [MAX_FICHEROS];
+} TipoInodo;
 
+TipoInodo inodos[MAX_FICHEROS];
 
 typedef struct {
   uint16_t posicion;                    /* Informacion extra de los inodos, posicion de lectura o escritura */
   uint8_t abierto;                      /* Informacion extra de los inodos, 0 si no esta abierto y 1 si lo esta */
 } TipoInodo_x [MAX_FICHEROS];
+
+int montar = 0;
