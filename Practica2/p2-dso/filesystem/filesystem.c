@@ -625,6 +625,48 @@ int lseekFile(int descriptor, long offset, int whence)
 
 int checkFile (char * fileName)
 {
+
+	// Creo que si el nombre del fichero es un puntero, nuestro atributo también tendría que serlo.
+
+	// Comprobamos que existe un fichero con ese nombre y, en caso afirmativo, nos guardamos su indice.
+	int indice = -2;
+	for (int i = 0; i < MAX_FICHEROS; i++) {
+		if (inodos[i].nombre == fileName) {
+			indice = i;
+			// Si el fichero está abierto: Error.
+			if (inodos_x[indice].abierto == 1){
+				return -2;
+			}
+		}
+	}
+
+	// Si no existe ningun fichero con ese nombre: Error.
+	if (indice == -2) {
+		return -2;
+	}
+
+	uint32_t hashFichParam = inodos[indice].integridad;
+	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
+	uint32_t hashFich = 0;
+	uint32_t hash = 0;
+	for (int i = 0; i < ceil(inodos[indice].tamano) / BLOCK_SIZE; i++) {
+		hash += CRC32 (inodos[indice].bloqueDirecto[i], strlen(inodos[indice].bloqueDirecto[i]));
+		// uint32_t hash = CRC32 (inodos[indice].bloqueDirecto[0], inodos[indice].tamano);
+		hashFich += hash;
+		// Si se ha dado un error al calcular la integriad del bloque: Error.
+		if (hash == 0) {
+			return -2;
+		}
+	}
+
+	// Si las integridades coinciden, retornamos 0.
+	if (hashFichParam == hashFich) {
+		return 0;
+	}
+	// Sino, devolvemos -1;
+	else {
+		return -1;
+	}
     return -2;
 }
 
@@ -635,7 +677,40 @@ int checkFile (char * fileName)
 
 int includeIntegrity (char * fileName)
 {
-    return -2;
+	// Comprobamos que existe un fichero con ese nombre y, en caso afirmativo, nos guardamos su indice.
+	int indice = -2;
+	for (int i = 0; i < MAX_FICHEROS; i++) {
+		if (inodos[i].nombre == fileName) {
+			indice = i;
+			// Si el fichero ya tiene integridad: Error.
+			if (inodos[indice].integridad != 0){
+				return -2;
+			}
+		}
+	}
+
+	// Si no existe ningun fichero con ese nombre: Error.
+	if (indice == -2) {
+		return -1;
+	}
+
+	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
+	uint32_t hashFich = 0;
+	uint32_t hash = 0;
+	for (int i = 0; i < ceil(inodos[indice].tamano) / BLOCK_SIZE; i++) {
+		hash += CRC32 (inodos[indice].bloqueDirecto[i], strlen(inodos[indice].bloqueDirecto[i]));
+		// uint32_t hash = CRC32 (inodos[indice].bloqueDirecto[0], inodos[indice].tamano);
+		hashFich += hash;
+		// Si se ha dado un error al calcular la integriad del bloque: Error.
+		if (hash == 0) {
+			return -2;
+		}
+	}
+
+	// Le añadimos la integridad al fichero.
+	inodos[indice].integridad = hashFich;
+
+    return 0;
 }
 
 /*
