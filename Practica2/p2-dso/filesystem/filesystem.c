@@ -726,7 +726,7 @@ int checkFile (char * fileName)
 	int id_inodo ;
 
 	if (montar == 0){
-		return -1;
+		return -2;
 	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
@@ -736,7 +736,7 @@ int checkFile (char * fileName)
 	}
 
 	if(inodos[id_inodo].tipo == T_ENLACE){
-		return -1;									//Si es de tipo enlace da error
+		return -2;									//Si es de tipo enlace da error
 	}
 
 	uint32_t hashFichParam = inodos[id_inodo].integridad;
@@ -777,7 +777,7 @@ int includeIntegrity (char * fileName)
 	int id_inodo ;
 
 	if (montar == 0){
-		return -1;
+		return -2;
 	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
@@ -792,7 +792,7 @@ int includeIntegrity (char * fileName)
 	}
 
 	if(inodos[id_inodo].tipo == T_ENLACE){
-		return -1;									//Si es de tipo enlace da error
+		return -2;									//Si es de tipo enlace da error
 	}
 
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
@@ -803,7 +803,7 @@ int includeIntegrity (char * fileName)
 		if(inodos[id_inodo].bloqueDirecto[i] == 255){
 			inodos[id_inodo].bloqueDirecto[i] = alloc();          //Si el bloque estaba reservado para el inodo pido un bloque vacio
 			if (inodos[id_inodo].bloqueDirecto[i] < 0){
-				return -1;
+				return -2;
 			}
 
 		}
@@ -832,7 +832,7 @@ int openFileIntegrity(char *fileName)
 	int id_inodo ;
 
 	if (montar == 0){
-		return -1;
+		return -3;
 	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
@@ -857,8 +857,11 @@ int openFileIntegrity(char *fileName)
 	
 	// Si tiene integridad, comprobamos que no este corrupto.
 	int integridad = checkFile(fileName);
-	if (integridad == -1 || integridad == -2) {
+	if (integridad == -1) {
 		return -2;
+	}
+	if (integridad == -2){
+		return -3;
 	}
 	// Compruebo si el inodo es de tipo enlace blando
 	/*if (inodo[id_inodo].type == T_ENLACE) {
