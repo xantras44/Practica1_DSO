@@ -363,6 +363,10 @@ int openFile(char *nombre)
 	if (inodos_x[id_inodo].abierto == 1){
 		return -2;								//Si ya esta abierto devuelvo -2 (error)
 	}
+
+	if(inodos[id_inodo].integridad != 0){
+		return -2;								//Si tiene integridad debe abrirse con integridad
+	}
 	// Compruebo si el inodo es de tipo enlace blando
 	/*if (inodo[id_inodo].type == T_ENLACE) {
 		// Para detectar bucles en enlaces simbolicos.       
@@ -393,6 +397,10 @@ int closeFile(int descriptor)
 		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
 	}
 
+	if(inodos[descriptor].integridad != 0){
+		return -1;								//Si tiene integridad debe abrirse con integridad
+	}
+
 	inodos_x[descriptor].abierto = 0;
 	metadata_fromMemoryToDisk() ;				//Requisito F3
 	return 0;
@@ -410,6 +418,10 @@ int readFile(int descriptor, void *buffer, int size)
 
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
+	}
+
+	if(inodos_x[descriptor].abierto == 0){
+		return -1;									//Si no esta abierto doy error
 	}
 
 	if (inodos_x[descriptor].posicion + size > inodos[descriptor].tamano){
@@ -486,9 +498,15 @@ int writeFile(int descriptor, void *buffer, int size)
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
+
+	if(inodos_x[descriptor].abierto == 0){
+		return -1;									//Si no esta abierto doy error
+	}
+
 	if (inodos_x[descriptor].posicion+size > MAX_FILE_SIZE-1){   /***********QUIZA ES TAMANO FICHERO NO BLOQUE************/
 		size = MAX_FILE_SIZE-1 - inodos_x[descriptor].posicion;  //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
 	}
+
 	if (size <= 0){
 		return 0;			// Devuelvo 0 si no se pide leer nada
 	}
@@ -669,19 +687,16 @@ int checkFile (char * fileName)
 
 		}
 		int desplazar = inodos[id_inodo].bloqueDirecto[i];
-		printf("desplazar %d\n", desplazar);
 		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+desplazar,b);
 		hash = CRC32 ((const unsigned char *)b, sizeof(b));
 		// uint32_t hash = CRC32 (inodos[id_inodo].bloqueDirecto[0], inodos[id_inodo].tamano);
 		hashFich += hash;
 
-		printf("hashfich check %lu\n", (unsigned long)hashFich);
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
 			return -2;
 		}
 	}
-	printf("integridad fichero %d", hashFich);
 	// Si las integridades coinciden, retornamos 0.
 	if (hashFichParam == hashFich) {
 		return 0;
@@ -724,15 +739,11 @@ int includeIntegrity (char * fileName)
 			}
 
 		}
-
-		int posicion = inodos[id_inodo].bloqueDirecto[i];
-		memmove(b, &posicion, 2048);
+		int desplazar = inodos[id_inodo].bloqueDirecto[i];
+		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+desplazar,b);
 		hash = CRC32 ((const unsigned char *)b, sizeof(b));
-		//hash = CRC32 (&(inodos[id_inodo].bloqueDirecto[i]), sizeof(inodos[id_inodo].bloqueDirecto[i]));
-		//printf("bloque %u\n", (unsigned int)(&(inodos[id_inodo].bloqueDirecto[i])));
-		// uint32_t hash = CRC32 (inodos[id_inodo].bloqueDirecto[0], inodos[id_inodo].tamano);
+	
 		hashFich += hash;
-		printf("hashfich include %lu\n", (unsigned long)hashFich);
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
 			return -2;
@@ -741,7 +752,6 @@ int includeIntegrity (char * fileName)
 
 	// Le añadimos la integridad al fichero.
 	inodos[id_inodo].integridad = hashFich;
-	printf("integridad inodo %d", inodos[id_inodo].integridad);
     return 0;
 }
 
@@ -760,15 +770,10 @@ int openFileIntegrity(char *fileName)
 	}
 
 
-	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-	// En openFile se devuelve -2 pero aquí se devuelve -3 segun el enunciado.
 	if (inodos_x[id_inodo].abierto == 1){
-		return -3;								//Si ya esta abierto devuelvo -2 (error)
+		return -3;								//Si ya esta abierto devuelvo -3 (error)
 	}
-	
 
-	// Comprobamos si el fichero tiene integridad.
-	// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 	// Comprobar si se comprueba así.
 	if (inodos[id_inodo].integridad == 0) {
 		return -3;
@@ -807,11 +812,18 @@ int closeFileIntegrity(int fileDescriptor)
 		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
 	}
 
+	if(inodos[fileDescriptor].integridad == 0){
+		return -1;									//Si no tiene integridad da error
+	}
+
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
 	for (int i = 0; i < 5; i++) {
-		hash = CRC32 (&(inodos[fileDescriptor].bloqueDirecto[i]), sizeof(inodos[fileDescriptor].bloqueDirecto[i]));
+		char b [BLOCK_SIZE];
+		int desplazar = inodos[fileDescriptor].bloqueDirecto[i];
+		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+desplazar,b);
+		hash = CRC32 ((const unsigned char *)b, sizeof(b));
 		// uint32_t hash = CRC32 (inodos[fileDescriptor].bloqueDirecto[0], inodos[fileDescriptor].tamano);
 		hashFich += hash;
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
@@ -820,7 +832,7 @@ int closeFileIntegrity(int fileDescriptor)
 		}
 	}
 
-
+	inodos[fileDescriptor].integridad = hashFich;
 	inodos_x[fileDescriptor].abierto = 0;
 	metadata_fromMemoryToDisk() ;                //Requisito F3
 	return 0;
