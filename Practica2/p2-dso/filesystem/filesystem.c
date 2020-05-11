@@ -307,7 +307,7 @@ int createFile(char *nombre)
 	}
 
 	inodos_x[id_inodo].posicion = 0;					// establezco el puntero a 0
-	inodos_x[id_inodo].abierto = 0;						// marco el inodo como abierto
+	inodos_x[id_inodo].abierto = 0;						// marco el inodo como cerrado
 
 	return 0;
 
@@ -368,14 +368,19 @@ int openFile(char *nombre)
 		return -2;								//Si tiene integridad debe abrirse con integridad
 	}
 	// Compruebo si el inodo es de tipo enlace blando
-	/*if (inodo[id_inodo].type == T_ENLACE) {
-		// Para detectar bucles en enlaces simbolicos.       
-		if (inodo[inodo_id2].type == T_ENLACE) {
-			return -1;
-		}
-		return openFile (nombre del fichero apuntado);
-	}*/
+	if (inodos[id_inodo].tipo == T_ENLACE) {
+		 
+		int id_inodo2 = namei(inodos[id_inodo].nombreEnlace) ;
+			if (id_inodo2 < 0){
+				return id_inodo2 ;     // Si no existe el fichero al que apunta devuelve error
+			}  
 
+		if (inodos[id_inodo2].tipo == T_ENLACE) {
+			return -1;					// No queremos bucles, no permitimos enlaces a enlaces
+		}
+		return openFile (inodos[id_inodo].nombreEnlace);
+	}
+	printf("abierto el fichero %s\n", nombre);
 	inodos_x[id_inodo].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
 	inodos_x[id_inodo].abierto = 1;
 	
@@ -392,7 +397,7 @@ int closeFile(int descriptor)
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
-
+	printf("el descriptor es %d\n", descriptor);
 	if (inodos_x[descriptor].abierto == 0){
 		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
 	}
@@ -401,8 +406,13 @@ int closeFile(int descriptor)
 		return -1;								//Si tiene integridad debe abrirse con integridad
 	}
 
+	if (inodos[descriptor].tipo == T_ENLACE) {
+		 return -1;								// No se puede cerrar un enlace
+	}
+
 	inodos_x[descriptor].abierto = 0;
 	metadata_fromMemoryToDisk() ;				//Requisito F3
+	printf("cerrado el fichero %s\n", inodos[descriptor].nombre);
 	return 0;
 
 }
@@ -422,6 +432,10 @@ int readFile(int descriptor, void *buffer, int size)
 
 	if(inodos_x[descriptor].abierto == 0){
 		return -1;									//Si no esta abierto doy error
+	}
+
+	if(inodos[descriptor].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
 	}
 
 	if (inodos_x[descriptor].posicion + size > inodos[descriptor].tamano){
@@ -501,6 +515,10 @@ int writeFile(int descriptor, void *buffer, int size)
 
 	if(inodos_x[descriptor].abierto == 0){
 		return -1;									//Si no esta abierto doy error
+	}
+
+	if(inodos[descriptor].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
 	}
 
 	if (inodos_x[descriptor].posicion+size > MAX_FILE_SIZE-1){   /***********QUIZA ES TAMANO FICHERO NO BLOQUE************/
@@ -621,6 +639,10 @@ int lseekFile(int descriptor, long offset, int whence)
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
 
+	if(inodos[descriptor].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
+	}
+
 	if(whence == FS_SEEK_BEGIN){
 		inodos_x[descriptor].posicion = 0;		// Ajusta el puntero de posicion al inicio
 		return 0;
@@ -673,6 +695,10 @@ int checkFile (char * fileName)
 		return -2 ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
 	}
 
+	if(inodos[id_inodo].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
+	}
+
 	uint32_t hashFichParam = inodos[id_inodo].integridad;
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
@@ -722,9 +748,14 @@ int includeIntegrity (char * fileName)
 	if (id_inodo < 0){
 		return id_inodo ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
 	}
+	
 
 	if (inodos[id_inodo].integridad != 0){
 		return -2;
+	}
+
+	if(inodos[id_inodo].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
 	}
 
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
@@ -778,6 +809,10 @@ int openFileIntegrity(char *fileName)
 	if (inodos[id_inodo].integridad == 0) {
 		return -3;
 	}
+
+	if(inodos[id_inodo].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
+	}
 	
 	// Si tiene integridad, comprobamos que no este corrupto.
 	int integridad = checkFile(fileName);
@@ -816,6 +851,10 @@ int closeFileIntegrity(int fileDescriptor)
 		return -1;									//Si no tiene integridad da error
 	}
 
+	if(inodos[fileDescriptor].tipo == T_ENLACE){
+		return -1;									//Si es de tipo enlace da error
+	}
+
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
@@ -844,7 +883,35 @@ int closeFileIntegrity(int fileDescriptor)
  */
 int createLn(char *fileName, char *linkName)
 {
-    return -1;
+	int id_inodo;
+	int id_enlace;
+	
+	// Obtenemos el inodo asociado al nombre propuesto.
+	id_inodo = namei(fileName);
+		if (id_inodo < 0){
+			return -1 ;     // Si no existe el fichero devuelvo -1 
+		}
+
+	id_enlace = namei(linkName);
+		if (id_enlace >= 0){
+			return -2;		// Si ya existe un enlace con ese nombre devuelvo -2
+		}
+
+	id_inodo = ialloc();
+	if (id_inodo < 0) { 		//Si ialloc devuelve un valor menor a 0 devuelvo error, no hay inodos libres
+		return -2 ;
+		 }
+
+	inodos[id_inodo].tipo = T_ENLACE ; 					// es de tipo enlace
+	strcpy(inodos[id_inodo].nombre, linkName);    		// asigno el nombre al inodo
+	strcpy(inodos[id_inodo].nombreEnlace, fileName);    // asigno el nombre a lo que apunta el enlace
+	inodos[id_inodo].tamano = 0;
+	printf("creado enlace %s en %s del inodo %d\n", inodos[id_inodo].nombreEnlace, inodos[id_inodo].nombre, id_inodo);
+	inodos_x[id_inodo].posicion = 0;					// establezco el puntero a 0
+	inodos_x[id_inodo].abierto = 0;						// marco el inodo como abierto
+
+	return 0;
+
 }
 
 /*
@@ -853,7 +920,20 @@ int createLn(char *fileName, char *linkName)
  */
 int removeLn(char *linkName)
 {
-    return -2;
+	int id_inodo ;
+	
+	// Obtenemos el inodo asociado al nombre propuesto.
+	id_inodo = namei(linkName) ;
+	if (id_inodo < 0){
+		return -1 ;     // Si no existe el enlace devuelvo -1 
+	}
+
+
+	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 	// pongo todos los valores del inodo a 0
+	printf("borrado enlace del inodo %d\n", id_inodo);
+	ifree(id_inodo) ;										 	// Libero el inodo		
+	metadata_fromMemoryToDisk() ;				//guardo todas las modificaciones a disco
+    return 0;
 }
 
 

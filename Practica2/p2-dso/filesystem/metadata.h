@@ -47,8 +47,8 @@ TipoSuperbloque superbloque[1];
 
 typedef struct {
   uint8_t tipo;                        /* Fichero == 1, enlace blando == 0 */
-  char nombre[LONG_NOMBRES];           /* Nombre del fichero asociado al inodo  */
-  char nombreEnlace[LONG_NOMBRES];     /* Nombre del enlace asociado al inodo  */
+  char nombre[LONG_NOMBRES];           /* Nombre del fichero o enlace asociado al inodo  */
+  char nombreEnlace[LONG_NOMBRES];     /* Nombre del fichero o enlace al que apunta si es de tipo enlace  */
   uint16_t tamano;                     /* Tamano actual del fichero en bytes */
   uint8_t bloqueDirecto[5];            /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
   uint32_t integridad;                 /* Numero para comprobar que el fichero no se ha corrompido;*/
