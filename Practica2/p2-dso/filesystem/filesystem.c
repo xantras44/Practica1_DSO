@@ -173,7 +173,13 @@ int mkFS(long deviceSize)
 	superbloque[0].numInodos = MAX_FICHEROS;          // el numero de inodos equivale al maximo de ficheros
 	superbloque[0].primerInodo = 1;
 	superbloque[0].numBloquesInodos = 2;
-	superbloque[0].numBloquesDatos = MAX_FICHEROS * MAX_FILE_SIZE / BLOCK_SIZE;
+	if(deviceSize / BLOCK_SIZE < MAX_FICHEROS * MAX_FILE_SIZE / BLOCK_SIZE + 3){
+		superbloque[0].numBloquesDatos = deviceSize / BLOCK_SIZE - 3;
+	}
+	else{
+		superbloque[0].numBloquesDatos = MAX_FICHEROS * MAX_FILE_SIZE / BLOCK_SIZE;
+	}
+	printf("num Bloques %d\n", superbloque[0].numBloquesDatos);
 	superbloque[0].primerBloqueDatos = 1 + superbloque[0].numBloquesInodos;
 	superbloque[0].tamDispositivo = deviceSize;
 	
@@ -274,6 +280,14 @@ int createFile(char *nombre)
 	//para crear el fichero voy a pedir tanto un bloque libre (alloc) como un inodo (ialloc), por lo que declaro 2 id's
 	int id_inodo, id_bloque ;
 
+	if (strlen(nombre) == 0 || strlen(nombre) > 32){
+		return -1;				// Si el nombre no concuerda con el tamano propuesto
+	}
+
+	if (montar == 0){
+		return -1;
+	}
+
 	id_inodo = namei(nombre);   //Compruebo que no exista ya un fichero con ese nombre usando namei()
 	if(id_inodo >= 0){			//Dara error si namei devuelve un valor mayor o igual a 0 (id del inodo cuyo fichero coincide en nombre)
 		return -1;
@@ -323,6 +337,10 @@ int removeFile(char *nombre)
 
 	char c [BLOCK_SIZE];
 
+	if (montar == 0){
+		return -1;
+	}
+
 	id_inodo = namei(nombre);   //Compruebo que exista ya un fichero con ese nombre usando namei()
 	if(id_inodo < 0){			//Dara error si namei devuelve un valor menor a 0, puesto que para borrar un fichero debe existir
 		return -1;
@@ -354,6 +372,10 @@ int openFile(char *nombre)
 {
 	int id_inodo ;
 	
+	if (montar == 0){
+		return -1;
+	}
+
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(nombre) ;
 	if (id_inodo < 0){
@@ -392,7 +414,11 @@ int openFile(char *nombre)
  * @return	0 if success, -1 otherwise.
  */
 int closeFile(int descriptor)
-{
+{	
+	if (montar == 0){
+		return -1;
+	}
+
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
@@ -422,6 +448,10 @@ int readFile(int descriptor, void *buffer, int size)
 {
 
 	int id_bloque ;
+
+	if (montar == 0){
+		return -1;
+	}
 
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
@@ -506,6 +536,11 @@ int readFile(int descriptor, void *buffer, int size)
 int writeFile(int descriptor, void *buffer, int size)
 {
 	int id_bloque ;
+
+	if (montar == 0){
+		return -1;
+	}
+
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
@@ -632,6 +667,10 @@ int writeFile(int descriptor, void *buffer, int size)
  */
 int lseekFile(int descriptor, long offset, int whence)
 {
+	if (montar == 0){
+		return -1;
+	}
+
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
@@ -685,6 +724,10 @@ int checkFile (char * fileName)
 {
 	// Comprobamos que existe un fichero con ese nombre.
 	int id_inodo ;
+
+	if (montar == 0){
+		return -1;
+	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(fileName) ;
@@ -732,6 +775,10 @@ int checkFile (char * fileName)
 int includeIntegrity (char * fileName)
 {
 	int id_inodo ;
+
+	if (montar == 0){
+		return -1;
+	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(fileName) ;
@@ -783,6 +830,10 @@ int includeIntegrity (char * fileName)
 int openFileIntegrity(char *fileName)
 {
 	int id_inodo ;
+
+	if (montar == 0){
+		return -1;
+	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(fileName) ;
@@ -801,7 +852,7 @@ int openFileIntegrity(char *fileName)
 	}
 
 	if(inodos[id_inodo].tipo == T_ENLACE){
-		return -1;									//Si es de tipo enlace da error
+		return -3;									//Si es de tipo enlace da error
 	}
 	
 	// Si tiene integridad, comprobamos que no este corrupto.
@@ -829,6 +880,11 @@ int openFileIntegrity(char *fileName)
  */
 int closeFileIntegrity(int fileDescriptor)
 {
+
+	if (montar == 0){
+		return -1;
+	}
+
 	if (fileDescriptor < 0 || (fileDescriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
@@ -874,6 +930,18 @@ int createLn(char *fileName, char *linkName)
 {
 	int id_inodo;
 	int id_enlace;
+
+	if (strlen(fileName) == 0 || strlen(fileName) > 32){
+		return -1;				// Si el nombre no concuerda con el tamano propuesto
+	}
+
+	if (strlen(linkName) == 0 || strlen(linkName) > 32){
+		return -1;				// Si el nombre no concuerda con el tamano propuesto
+	}
+
+	if (montar == 0){
+		return -1;
+	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(fileName);
@@ -909,6 +977,10 @@ int createLn(char *fileName, char *linkName)
 int removeLn(char *linkName)
 {
 	int id_inodo ;
+
+	if (montar == 0){
+		return -1;
+	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(linkName) ;

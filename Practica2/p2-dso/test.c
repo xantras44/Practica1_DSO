@@ -22,7 +22,7 @@
 #define ANSI_COLOR_GREEN "\x1b[32m"
 #define ANSI_COLOR_BLUE "\x1b[34m"
 
-#define N_BLOCKS 230			  // Number of blocks in the device
+#define N_BLOCKS 242			  // Number of blocks in the device
 #define DEV_SIZE N_BLOCKS *BLOCK_SIZE // Device size, in bytes
 
 int main()
@@ -50,7 +50,7 @@ int main()
 
 	///////
 
-	ret = createFile("/test.txt");
+	ret = createFile("a");
 	if (ret != 0)
 	{
 		fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST createFile ", ANSI_COLOR_RED, "FAILED\n", ANSI_COLOR_RESET);
@@ -96,7 +96,7 @@ int main()
 
 	///////
 
-	ret = includeIntegrity("/test.txt");
+	ret = includeIntegrity("a");
 	if (ret < 0)
 	{
 		fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST includeIntegrity ", ANSI_COLOR_RED, "FAILED\n", ANSI_COLOR_RESET);
@@ -106,7 +106,7 @@ int main()
 	
 	///////
 
-	ret = openFileIntegrity("/test.txt");
+	ret = openFileIntegrity("a");
 	if (ret < 0)
 	{
 		fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST openFileIntegrity ", ANSI_COLOR_RED, "FAILED\n", ANSI_COLOR_RESET);
@@ -116,7 +116,7 @@ int main()
 	
 	/////
 
-	ret = checkFile("/test.txt");
+	ret = checkFile("a");
 	if (ret < 0)
 	{
 		fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST checkFile ", ANSI_COLOR_RED, "FAILED\n", ANSI_COLOR_RESET);
