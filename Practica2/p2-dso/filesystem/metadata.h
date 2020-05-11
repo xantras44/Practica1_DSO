@@ -51,8 +51,8 @@ typedef struct {
   char nombreEnlace[LONG_NOMBRES];     /* Nombre del enlace asociado al inodo  */
   uint16_t tamano;                     /* Tamano actual del fichero en bytes */
   uint8_t bloqueDirecto[5];            /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
-  uint32_t integridad;                 /* Numero para comprobar que el fichero no se ha corrompido;
-  //char relleno[PADDING_INODO];         /* Relleno para completar un bloque */
+  uint32_t integridad;                 /* Numero para comprobar que el fichero no se ha corrompido;*/
+  //char relleno[PADDING_INODO];        /* Relleno para completar un bloque */
 } TipoInodo;
 
 TipoInodo inodos[MAX_FICHEROS];

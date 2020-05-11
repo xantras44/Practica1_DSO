@@ -66,7 +66,7 @@ int ifree ( int inodo_id )
     return -1;
     // liberamos el inodo
     superbloque[0].mapaInodos[inodo_id] = 0;
-    return -1;
+    return 0;
 }
 
 int bfree ( int block_id )
@@ -76,7 +76,7 @@ int bfree ( int block_id )
     return -1;
     // liberamos el bloque
     superbloque[0].mapaBloques[block_id] = 0;
-    return -1;
+    return 0;
 }
 
 int bmap ( int inodo_id, int offset )
@@ -299,9 +299,11 @@ int createFile(char *nombre)
 	strcpy(inodos[id_inodo].nombre, nombre);    		// asigno el nombre al inodo
 	inodos[id_inodo].bloqueDirecto[0] = id_bloque ;   	// asigno el primer bloque directo
 
+
 	for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){  /* El resto de bloques directos (habra tantos como tamano fichero entre 
 															tamano bloque) los asigno a un valor no valido por el momento*/
 		inodos[id_inodo].bloqueDirecto[i] = 255;
+
 	}
 
 	inodos_x[id_inodo].posicion = 0;					// establezco el puntero a 0
@@ -319,18 +321,27 @@ int removeFile(char *nombre)
 {
 	int id_inodo ;
 
+	char c [BLOCK_SIZE];
+
 	id_inodo = namei(nombre);   //Compruebo que exista ya un fichero con ese nombre usando namei()
 	if(id_inodo < 0){			//Dara error si namei devuelve un valor menor a 0, puesto que para borrar un fichero debe existir
 		return -1;
 	}
 
-	for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){
+	for (int i = 0; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){
 		bfree(inodos[id_inodo].bloqueDirecto[i]);         		// Libero los bloques directos asociados
+	}
+	
+	memset(c, 0, BLOCK_SIZE);
+	for (int i = 0; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){			// pongo los valores del bloque a 0
+		int desplazar = inodos[id_inodo].bloqueDirecto[i];
+		bwrite(DEVICE_IMAGE, superbloque[0].primerBloqueDatos + desplazar, c);
 	}
 
 	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 	// pongo todos los valores del inodo a 0
-	ifree(id_inodo) ;										 	// Libero el inodo		
 	
+	ifree(id_inodo) ;										 	// Libero el inodo		
+	metadata_fromMemoryToDisk() ;				//guardo todas las modificaciones a disco
 	return 0; 
 
 }
@@ -382,9 +393,8 @@ int closeFile(int descriptor)
 		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
 	}
 
-	inodos_x[descriptor].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
 	inodos_x[descriptor].abierto = 0;
-
+	metadata_fromMemoryToDisk() ;				//Requisito F3
 	return 0;
 
 }
@@ -395,7 +405,7 @@ int closeFile(int descriptor)
  */
 int readFile(int descriptor, void *buffer, int size)
 {
-	
+
 	int id_bloque ;
 
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
@@ -403,8 +413,10 @@ int readFile(int descriptor, void *buffer, int size)
 	}
 
 	if (inodos_x[descriptor].posicion + size > inodos[descriptor].tamano){
+
 		size = inodos[descriptor].tamano - inodos_x[descriptor].posicion;     //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
 	}
+
 
 	if (size <= 0){
 		return 0;         // Devuelvo 0 si no queda nada por leer
@@ -437,6 +449,7 @@ int readFile(int descriptor, void *buffer, int size)
 		size -= leer;							// ajusta size por si queda algo que leer de otro bloque
 		actual += 1;							// ajusta el bloque actual
 		leido += leer;							// encargado de mantener cuanto se ha leido
+
 		
 	}
 
@@ -459,7 +472,6 @@ int readFile(int descriptor, void *buffer, int size)
 		inodos_x[descriptor].posicion += size;						 // Ajusta el puntero de posicion
 
 		leido += size;												// encargado de mantener cuanto se ha leido
-	
 	return leido;		//Devuelve el numero de bytes leidos
 
 }
@@ -471,15 +483,12 @@ int readFile(int descriptor, void *buffer, int size)
 int writeFile(int descriptor, void *buffer, int size)
 {
 	int id_bloque ;
-	printf("holaaaaaaa %p\n", buffer);
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
-
-	if (inodos_x[descriptor].posicion+size > MAX_FILE_SIZE){   /***********QUIZA ES TAMANO FICHERO NO BLOQUE************/
-		size = MAX_DISCO - inodos_x[descriptor].posicion;  //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
+	if (inodos_x[descriptor].posicion+size > MAX_FILE_SIZE-1){   /***********QUIZA ES TAMANO FICHERO NO BLOQUE************/
+		size = MAX_FILE_SIZE-1 - inodos_x[descriptor].posicion;  //Si el tamano pedido es mayor que lo que queda devuelvo lo que queda por leer
 	}
-
 	if (size <= 0){
 		return 0;			// Devuelvo 0 si no se pide leer nada
 	}
@@ -495,12 +504,13 @@ int writeFile(int descriptor, void *buffer, int size)
 			if (id_bloque < 0){
 				return -1;
 			}
-			printf("idBloque es %d", id_bloque);
 			int cambiado = 0;
+			int contador = 0;
 			int i = 0;
-			while (inodos[descriptor].bloqueDirecto[i] != 255 && cambiado == 0){ 
+			while (contador < 5 && cambiado == 0){ 
 															
 				if(inodos[descriptor].bloqueDirecto[i] == 255){
+
 					inodos[descriptor].bloqueDirecto[i] = id_bloque;    /*Si hay un bloque disponible se lo asigno al inodo en su
 																		posicion correspondiente*/
 					cambiado = 1;
@@ -509,10 +519,14 @@ int writeFile(int descriptor, void *buffer, int size)
 				i += 1;
 			}
 
-			if (cambiado == 1){
+			if (cambiado != 1){
 				return -1;
 			}
 		
+		}
+
+		if(id_bloque < 0){
+			return -1;
 		}
 
 		char b[BLOCK_SIZE] ;
@@ -521,12 +535,12 @@ int writeFile(int descriptor, void *buffer, int size)
 		
 		int escribir = (actual + 1) * BLOCK_SIZE - inodos_x[descriptor].posicion;
 			
-		int a =bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);  //leo el bloque de disco
-		printf("bread %d\n", a);
+		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);  //leo el bloque de disco
+
 		memmove(b+posActual, buffer + escrito, escribir);           //Modifico los datos con la informacion proporcionada
-		int c =bwrite(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);  //vuelvo a escribir el bloque a disco
-		printf("bread %d\n", c);
-		
+		bwrite(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);  //vuelvo a escribir el bloque a disco
+
+		inodos[descriptor].tamano += escribir;          //actualizo el tamano actual del fichero
 
 		inodos_x[descriptor].posicion += escribir;		// Ajusta el puntero de posicion									
 
@@ -545,6 +559,7 @@ int writeFile(int descriptor, void *buffer, int size)
 			for (int i = 1; i < MAX_FILE_SIZE / BLOCK_SIZE; i++){ 
 															
 				if(inodos[descriptor].bloqueDirecto[i] == 255){
+					
 					inodos[descriptor].bloqueDirecto[i] = id_bloque;    /*Si hay un bloque disponible se lo asigno al inodo en su
 																		posicion correspondiente*/
 				}
@@ -552,16 +567,22 @@ int writeFile(int descriptor, void *buffer, int size)
 		
 		}
 
+		if(id_bloque < 0){
+			return -1;
+		}
+
 		char b[BLOCK_SIZE] ;
 
 		int posActual =	inodos_x[descriptor].posicion % BLOCK_SIZE;  // calcula la posicion con respecto al tamano del bloque 
 		
-		int e = bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);		//leo el bloque de disco
-		printf("bread %d\n", e);
+		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);		//leo el bloque de disco
+
 		memmove(b+posActual, buffer + escrito, size);           //Modifico los datos con la informacion proporcionada
 			
-		int f = bwrite(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);  //vuelvo a escribir el bloque a disco
-		printf("bwrite %d\n", f);
+		bwrite(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+id_bloque, b);  //vuelvo a escribir el bloque a disco
+
+		inodos[descriptor].tamano += size;		//actualizo el tamano actual del fichero
+
 		inodos_x[descriptor].posicion += size;		// Ajusta el puntero de posicion				
 
 		escrito += size;					// encargado de mantener cuanto se ha escrito			
@@ -638,16 +659,29 @@ int checkFile (char * fileName)
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
-	for (int i = 0; i < ceil(inodos[id_inodo].tamano) / BLOCK_SIZE; i++) {
-		hash += CRC32 (inodos[id_inodo].bloqueDirecto[i], strlen(inodos[id_inodo].bloqueDirecto[i]));
+	for (int i = 0; i < 5; i++) {
+		char b [BLOCK_SIZE];
+		if(inodos[id_inodo].bloqueDirecto[i] == 255){
+			inodos[id_inodo].bloqueDirecto[i] = alloc();          //Si el bloque estaba reservado para el inodo pido un bloque vacio
+			if (inodos[id_inodo].bloqueDirecto[i] < 0){
+				return -1;
+			}
+
+		}
+		int desplazar = inodos[id_inodo].bloqueDirecto[i];
+		printf("desplazar %d\n", desplazar);
+		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+desplazar,b);
+		hash = CRC32 ((const unsigned char *)b, sizeof(b));
 		// uint32_t hash = CRC32 (inodos[id_inodo].bloqueDirecto[0], inodos[id_inodo].tamano);
 		hashFich += hash;
+
+		printf("hashfich check %lu\n", (unsigned long)hashFich);
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
 			return -2;
 		}
 	}
-
+	printf("integridad fichero %d", hashFich);
 	// Si las integridades coinciden, retornamos 0.
 	if (hashFichParam == hashFich) {
 		return 0;
@@ -681,10 +715,24 @@ int includeIntegrity (char * fileName)
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
-	for (int i = 0; i < ceil(inodos[id_inodo].tamano) / BLOCK_SIZE; i++) {
-		hash += CRC32 (inodos[id_inodo].bloqueDirecto[i], strlen(inodos[id_inodo].bloqueDirecto[i]));
+	for (int i = 0; i < 5; i++) {
+		char b [BLOCK_SIZE];
+		if(inodos[id_inodo].bloqueDirecto[i] == 255){
+			inodos[id_inodo].bloqueDirecto[i] = alloc();          //Si el bloque estaba reservado para el inodo pido un bloque vacio
+			if (inodos[id_inodo].bloqueDirecto[i] < 0){
+				return -1;
+			}
+
+		}
+
+		int posicion = inodos[id_inodo].bloqueDirecto[i];
+		memmove(b, &posicion, 2048);
+		hash = CRC32 ((const unsigned char *)b, sizeof(b));
+		//hash = CRC32 (&(inodos[id_inodo].bloqueDirecto[i]), sizeof(inodos[id_inodo].bloqueDirecto[i]));
+		//printf("bloque %u\n", (unsigned int)(&(inodos[id_inodo].bloqueDirecto[i])));
 		// uint32_t hash = CRC32 (inodos[id_inodo].bloqueDirecto[0], inodos[id_inodo].tamano);
 		hashFich += hash;
+		printf("hashfich include %lu\n", (unsigned long)hashFich);
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
 			return -2;
@@ -693,7 +741,7 @@ int includeIntegrity (char * fileName)
 
 	// Le añadimos la integridad al fichero.
 	inodos[id_inodo].integridad = hashFich;
-
+	printf("integridad inodo %d", inodos[id_inodo].integridad);
     return 0;
 }
 
@@ -728,7 +776,7 @@ int openFileIntegrity(char *fileName)
 	
 	// Si tiene integridad, comprobamos que no este corrupto.
 	int integridad = checkFile(fileName);
-	if (integridad == -1) {
+	if (integridad == -1 || integridad == -2) {
 		return -2;
 	}
 	// Compruebo si el inodo es de tipo enlace blando
@@ -742,7 +790,6 @@ int openFileIntegrity(char *fileName)
 
 	inodos_x[id_inodo].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
 	inodos_x[id_inodo].abierto = 1;
-	
 	return id_inodo; 
 }
 
@@ -756,12 +803,15 @@ int closeFileIntegrity(int fileDescriptor)
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
 	
+	if (inodos_x[fileDescriptor].abierto == 0){
+		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
+	}
 
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques.
 	uint32_t hashFich = 0;
 	uint32_t hash = 0;
-	for (int i = 0; i < ceil(inodos[fileDescriptor].tamano) / BLOCK_SIZE; i++) {
-		hash += CRC32 (inodos[fileDescriptor].bloqueDirecto[i], strlen(inodos[fileDescriptor].bloqueDirecto[i]));
+	for (int i = 0; i < 5; i++) {
+		hash = CRC32 (&(inodos[fileDescriptor].bloqueDirecto[i]), sizeof(inodos[fileDescriptor].bloqueDirecto[i]));
 		// uint32_t hash = CRC32 (inodos[fileDescriptor].bloqueDirecto[0], inodos[fileDescriptor].tamano);
 		hashFich += hash;
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
@@ -770,13 +820,9 @@ int closeFileIntegrity(int fileDescriptor)
 		}
 	}
 
-	if (inodos_x[fileDescriptor].abierto == 0){
-		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
-	}
 
-	inodos_x[fileDescriptor].posicion = 0;       //Establezco el puntero a 0 y marco como cerrado
 	inodos_x[fileDescriptor].abierto = 0;
-
+	metadata_fromMemoryToDisk() ;                //Requisito F3
 	return 0;
 }
 
