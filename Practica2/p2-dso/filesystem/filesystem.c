@@ -380,7 +380,6 @@ int openFile(char *nombre)
 		}
 		return openFile (inodos[id_inodo].nombreEnlace);
 	}
-	printf("abierto el fichero %s\n", nombre);
 	inodos_x[id_inodo].posicion = 0;       //Establezco el puntero a 0 y marco como abierto
 	inodos_x[id_inodo].abierto = 1;
 	
@@ -397,7 +396,6 @@ int closeFile(int descriptor)
 	if (descriptor < 0 || (descriptor >= superbloque[0].numInodos)){
 		return -1 ;									//Devuelve error si el descriptor no corresponde a un valor valido de inodo
 	}
-	printf("el descriptor es %d\n", descriptor);
 	if (inodos_x[descriptor].abierto == 0){
 		return -1;									//Si ya está cerrado no lo vuelvo a cerrar
 	}
@@ -412,7 +410,6 @@ int closeFile(int descriptor)
 
 	inodos_x[descriptor].abierto = 0;
 	metadata_fromMemoryToDisk() ;				//Requisito F3
-	printf("cerrado el fichero %s\n", inodos[descriptor].nombre);
 	return 0;
 
 }
@@ -705,13 +702,6 @@ int checkFile (char * fileName)
 	uint32_t hash = 0;
 	for (int i = 0; i < 5; i++) {
 		char b [BLOCK_SIZE];
-		if(inodos[id_inodo].bloqueDirecto[i] == 255){
-			inodos[id_inodo].bloqueDirecto[i] = alloc();          //Si el bloque estaba reservado para el inodo pido un bloque vacio
-			if (inodos[id_inodo].bloqueDirecto[i] < 0){
-				return -1;
-			}
-
-		}
 		int desplazar = inodos[id_inodo].bloqueDirecto[i];
 		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+desplazar,b);
 		hash = CRC32 ((const unsigned char *)b, sizeof(b));
@@ -863,7 +853,6 @@ int closeFileIntegrity(int fileDescriptor)
 		int desplazar = inodos[fileDescriptor].bloqueDirecto[i];
 		bread(DEVICE_IMAGE, superbloque[0].primerBloqueDatos+desplazar,b);
 		hash = CRC32 ((const unsigned char *)b, sizeof(b));
-		// uint32_t hash = CRC32 (inodos[fileDescriptor].bloqueDirecto[0], inodos[fileDescriptor].tamano);
 		hashFich += hash;
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
@@ -906,7 +895,6 @@ int createLn(char *fileName, char *linkName)
 	strcpy(inodos[id_inodo].nombre, linkName);    		// asigno el nombre al inodo
 	strcpy(inodos[id_inodo].nombreEnlace, fileName);    // asigno el nombre a lo que apunta el enlace
 	inodos[id_inodo].tamano = 0;
-	printf("creado enlace %s en %s del inodo %d\n", inodos[id_inodo].nombreEnlace, inodos[id_inodo].nombre, id_inodo);
 	inodos_x[id_inodo].posicion = 0;					// establezco el puntero a 0
 	inodos_x[id_inodo].abierto = 0;						// marco el inodo como abierto
 
@@ -930,7 +918,6 @@ int removeLn(char *linkName)
 
 
 	memset( &(inodos[id_inodo]), 0, sizeof(TipoInodo) ) ;	 	// pongo todos los valores del inodo a 0
-	printf("borrado enlace del inodo %d\n", id_inodo);
 	ifree(id_inodo) ;										 	// Libero el inodo		
 	metadata_fromMemoryToDisk() ;				//guardo todas las modificaciones a disco
     return 0;
