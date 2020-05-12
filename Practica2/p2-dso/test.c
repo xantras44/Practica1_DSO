@@ -946,9 +946,7 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST createLnErrorLinkToLink ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
-
-
-
+	unmountFS();
 
 	return 0;
 }
