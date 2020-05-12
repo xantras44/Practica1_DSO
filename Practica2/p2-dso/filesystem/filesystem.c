@@ -805,7 +805,7 @@ int includeIntegrity (char * fileName)
 	}
 
 	if(inodos[id_inodo].tipo == T_ENLACE){
-		return -1;									//Si es de tipo enlace da error
+		return -2;									//Si es de tipo enlace da error
 	}
 
 	// Calculamos la integridad total del fichero como la suma de las integriaddes de todos sus bloques directos.
@@ -817,7 +817,7 @@ int includeIntegrity (char * fileName)
 		if(inodos[id_inodo].bloqueDirecto[i] == 255){
 			inodos[id_inodo].bloqueDirecto[i] = alloc();          
 			if (inodos[id_inodo].bloqueDirecto[i] < 0){
-				return -1;
+				return -2;
 			}
 
 		}
