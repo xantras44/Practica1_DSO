@@ -101,12 +101,7 @@ int namei ( char *fname )
 }
 
 
-/*FIN FUNCIONES AUXILIARES*/
 
-
-/********************************************************************************************/
-// En las diapositivas (Tema 4: 155 - 162) tambien estan estas 2 funciones para leer metadatos
-/********************************************************************************************/
 
 //Funcion encargada de pasar la informacion de disco a memoria
 int metadata_fromDiskToMemory ( void ) {
@@ -150,8 +145,15 @@ int metadata_fromMemoryToDisk ( void ) {
  return 0;
 }
 
+
+/*FIN FUNCIONES AUXILIARES*/
+
+
+
+
+
 /***********************/
-// Aqui empieza el codigo
+// Aqui empieza el codigo principal
 /***********************/
 
 
@@ -160,11 +162,9 @@ int mkFS(long deviceSize)
 {
 	//Si el tamano del disco es menor o mayor que el rango proporcionado devuelve error
 	if(deviceSize < MIN_DISCO){
-		printf("Tamaño del disco demasiado pequeño, el tamaño mínimo es %d\n", MIN_DISCO);
 		return -1;
 	}
 	if(deviceSize > MAX_DISCO){
-		printf("Tamaño del disco demasiado grande, el tamaño máximo es %d\n", MAX_DISCO);
 		return -1;
 	}
 
@@ -924,7 +924,7 @@ int closeFileIntegrity(int fileDescriptor)
 
 		// Si se ha dado un error al calcular la integriad del bloque: Error.
 		if (hash == 0) {
-			return -2;
+			return -1;
 		}
 	}
 
@@ -990,7 +990,7 @@ int removeLn(char *linkName)
 	int id_inodo ;
 
 	if (montar == 0){
-		return -1;					//Si el dispositivo no esta montado
+		return -2;					//Si el dispositivo no esta montado
 	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
