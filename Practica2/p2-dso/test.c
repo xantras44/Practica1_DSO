@@ -30,7 +30,8 @@ int main()
 	int ret;
 	long tamano;
 
-	/*PRUEBA GENERAL*/
+	/***************INICIO PRUEBA GENERAL*****************************/
+
 	printf("\nPRUEBA GENERAL\n");
 	ret = mkFS(DEV_SIZE);
 	if (ret < 0)
@@ -322,10 +323,69 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST unmountFS ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
+	/************* FIN PRUEBA GENERAL ***********************************/
+
+	/*Borramos los ficheros sobrantes de la prueba para realizar el resto con el sistema sin inodos ocupados*/
+
+	ret = removeFile("prueba1_2");
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+	/*************** INICIO PRUEBA 2*****************************/
+	
+	/*PRUEBA escribir con puntero al final*/
+	printf("\nPRUEBA escribir con puntero al final\n");
+
+	mountFS();
+	ret = createFile("escribirDesdeFinal");
+	int valor = openFile("escribirDesdeFinal");
+	lseekFile(valor, 0, FS_SEEK_END);
+	char *llenar = "12345Esto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturass12345Esto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturassEsto es un texto de prueba que ocupa exactamente 100 huecos para ver que tal funcionan las lecturass";
+	writeFile(valor, llenar, strlen(llenar));
+	char *fin = "esto no se escribe";
+	ret = writeFile(valor, fin, strlen(fin));
+	if (ret != 0)
+	{
+		fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST escribirDesdeFinal ", ANSI_COLOR_RED, "FAILED\n", ANSI_COLOR_RESET);
+		return -1;
+	}
+	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST escribirDesdeFinal ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
+	
+	/*Borramos el fichero y desmontamos para no tener problemas en futuras pruebas*/
+	removeFile("escribirDesdeFinal");
+	unmountFS();
+	/******** FIN PRUEBA 2 *****************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/******** INICIO PRUEBA 3 ****************/
 
 		/*PRUEBA mkFS mayor y mkFS menor*/
 	printf("\nPRUEBA mkFS mayor y mkFS menor\n");
@@ -349,9 +409,27 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST mkFSErrorMayor ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
+	/********** FIN PRUEBA 3 ****************/
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/******** INICIO PRUEBA 4 ****************/
 	
 	/*PRUEBA unmountFS y mountFS*/
 	printf("\nPRUEBA unmountFS y mountFS\n");
@@ -376,9 +454,28 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST unmountFSErrorDesmontado ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
+	/********** FIN PRUEBA 4 ****************/
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/******** INICIO PRUEBA 5 ****************/
 
 	/*PRUEBA createFileError y removeFileError*/
 	printf("\nPRUEBA createFileError y removeFileError\n");
@@ -415,6 +512,16 @@ int main()
 		return -1;
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST createFileErrorNombre+32 ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
+
+	///////
+
+	ret = createFile("");
+	if (ret != -2)
+	{
+		fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST createFileErrorNombre0 ", ANSI_COLOR_RED, "FAILED\n", ANSI_COLOR_RESET);
+		return -1;
+	}
+	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST createFileErrorNombre0 ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
 	///////
 
@@ -522,7 +629,6 @@ int main()
 	removeFile("createFileError+48Fich46");
 	removeFile("createFileError+48Fich47");
 	removeFile("createFileError+48Fich48");
-	removeFile("createFileError+48Fich49");
 
 	///////
 
@@ -546,10 +652,33 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST removeFileNoExiste ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 	
+	/********** FIN PRUEBA 5 ****************/
+
+	/*Funcion extra para restablecer el sistema para futuras pruebas*/
 	unmountFS();
 
 
+	
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/******** INICIO PRUEBA 6 ****************/
 
 	/*PRUEBA openFileError y closeFileError*/
 	printf("\nPRUEBA openFileError y closeFileError\n");
@@ -599,6 +728,8 @@ int main()
 		return -1;
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST openFileErrorEnlaceSinFich ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
+	
+	/*Borramos el enlace puesto que ya no lo vamos a utilizar, no forma parte de la prueba*/
 	removeLn("openFileErrorEnlaceSinFich");
 
 	//////
@@ -624,6 +755,7 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST closeFileErrorCerrado ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
+	
 	//////
 
 	includeIntegrity("closeFileError");
@@ -638,10 +770,31 @@ int main()
 	removeFile("closeFileError");
 	unmountFS();
 
+	/*************** FIN PRUEBA 6****************/
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/************* INICIO PRUEBA 7***************/
 
 	/*PRUEBA readFileError y writeFileError*/
 	printf("\nPRUEBA readFileError y writeFileError\n");
@@ -684,8 +837,34 @@ int main()
 
 	unmountFS();
 
+	/***************FIN PRUEBA 7********************/
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/**************INICIO PRUEBA 8*****************/
 
 	/*PRUEBA lseekFileError*/
 	printf("\nPRUEBA lseekFileError\n");
@@ -728,8 +907,33 @@ int main()
 
 	unmountFS();
 
+	/****************FIN PRUEBA 8**************/
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/**************INICIO PRUEBA 9**************/
 
 	/*PRUEBA checkFileError e includeIntegrityError*/
 	printf("\nPRUEBA checkFileError e includeIntegrityError\n");
@@ -792,10 +996,29 @@ int main()
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST includeIntegrityErrorIntegridad ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
 
+	/*****************FIN PRUEBA 9**********************/
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/*****************INICIO PRUEBA 10*******************/
 
 	/*PRUEBA openFileIntegrityError y closeFileIntegrityError*/
 	printf("\nPRUEBA openFileIntegrityError y closeFileIntegrityError\n");
@@ -836,7 +1059,6 @@ int main()
 
 	createFile("openFileIntegrityErrorFich");
 	createLn("openFileIntegrityErrorFich", "openFileIntegrityErrorLnNoFich");
-	removeFile("openFileIntegrityErrorFich");
 	ret = openFileIntegrity("openFileIntegrityErrorLnNoFich");
 	if (ret != -3)
 	{
@@ -845,6 +1067,7 @@ int main()
 	}
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST openFileIntegrityErrorLnNoFich ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 	removeLn("openFileIntegrityErrorLnNoFich");
+	removeFile("openFileIntegrityErrorFich");
 
 	//////
 
@@ -884,9 +1107,33 @@ int main()
 	removeFile("closeFileIntegrityError");
 	unmountFS();
 
+	/*******************FIN PRUEBA 10***********************/
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/****************INICIO PRUEBA 11**********************/
 
 	/*PRUEBA createLnError y removeLnError*/
 	printf("\nPRUEBA createLnError y removeLnError\n");
@@ -947,6 +1194,8 @@ int main()
 	fprintf(stdout, "%s%s%s%s%s", ANSI_COLOR_BLUE, "TEST createLnErrorLinkToLink ", ANSI_COLOR_GREEN, "SUCCESS\n", ANSI_COLOR_RESET);
 
 	unmountFS();
+
+	/******************FIN PRUEBA 11*********************/
 
 	return 0;
 }
