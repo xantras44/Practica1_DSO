@@ -160,11 +160,11 @@ int mkFS(long deviceSize)
 {
 	//Si el tamano del disco es menor o mayor que el rango proporcionado devuelve error
 	if(deviceSize < MIN_DISCO){
-		printf("Tamaño del disco demasiado pequeño, el tamaño mínimo es %d", MIN_DISCO);
+		printf("Tamaño del disco demasiado pequeño, el tamaño mínimo es %d\n", MIN_DISCO);
 		return -1;
 	}
 	if(deviceSize > MAX_DISCO){
-		printf("Tamaño del disco demasiado grande, el tamaño máximo es %d", MAX_DISCO);
+		printf("Tamaño del disco demasiado grande, el tamaño máximo es %d\n", MAX_DISCO);
 		return -1;
 	}
 
@@ -294,11 +294,11 @@ int createFile(char *nombre)
 	int id_inodo, id_bloque ;
 
 	if (strlen(nombre) == 0 || strlen(nombre) > 32){
-		return -1;				// Si el nombre no concuerda con el tamano propuesto
+		return -2;				// Si el nombre no concuerda con el tamano propuesto
 	}
 
 	if (montar == 0){
-		return -1;				//Si el sistema no esta montado da error
+		return -2;				//Si el sistema no esta montado da error
 	}
 
 	id_inodo = namei(nombre);   //Compruebo que no exista ya un fichero con ese nombre usando namei()
@@ -309,7 +309,7 @@ int createFile(char *nombre)
 	//Pido un inodo libre con ialloc()
 	id_inodo = ialloc() ;
 	if (id_inodo < 0) { 		//Si ialloc devuelve un valor menor a 0 da error
-		return id_inodo ;
+		return -2 ;
 		 }
 
 	//Miramos que haya bloques libres con alloc()
@@ -348,7 +348,7 @@ int removeFile(char *nombre)
 	char c [BLOCK_SIZE];
 
 	if (montar == 0){
-		return -1;					//Si el sistema no esta montado da error
+		return -2;					//Si el sistema no esta montado da error
 	}
 
 	id_inodo = namei(nombre);   //Compruebo que exista ya un fichero con ese nombre usando namei()
@@ -739,7 +739,7 @@ int checkFile (char * fileName)
 	// Obtenemos el inodo asociado al nombre propuesto.
 	id_inodo = namei(fileName) ;
 	if (id_inodo < 0){
-		return -2 ;     // Si no existe el fichero devuelvo -1 (id_inodo = -1 pues namei no lo encuentra)
+		return -2 ;     // Si no existe el fichero devuelvo -2
 	}
 
 	if (inodos_x[id_inodo].abierto == 1){
@@ -941,15 +941,15 @@ int createLn(char *fileName, char *linkName)
 	int id_enlace;
 
 	if (strlen(fileName) == 0 || strlen(fileName) > 32){
-		return -1;				// Si el nombre no concuerda con el tamano propuesto
+		return -2;				// Si el nombre no concuerda con el tamano propuesto
 	}
 
 	if (strlen(linkName) == 0 || strlen(linkName) > 32){
-		return -1;				// Si el nombre no concuerda con el tamano propuesto
+		return -2;				// Si el nombre no concuerda con el tamano propuesto
 	}
 
 	if (montar == 0){
-		return -1;				//Si el dispositivo no esta montado
+		return -2;				//Si el dispositivo no esta montado
 	}
 	
 	// Obtenemos el inodo asociado al nombre propuesto.
@@ -964,7 +964,7 @@ int createLn(char *fileName, char *linkName)
 		}
 
 	if (inodos[id_inodo].tipo == T_ENLACE){
-		return -1;						//No permitimos enlaces a enlaces
+		return -2;						//No permitimos enlaces a enlaces
 	}
 
 	id_inodo = ialloc();
