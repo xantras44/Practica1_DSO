@@ -16,7 +16,6 @@
 #define MIN_DISCO 460*1024      //Menor tamano disco segun NF6
 #define MAX_DISCO 600*1024      //Mayor tamano disco segun NF6
 #define PADDING_SUPERBLOQUE 1743  // Relleno necesario para el superbloque
-#define PADDING_INODO 272         // Relleno para cada bloque de inodos
 #define NUMBLOQUESDATOS MAX_FICHEROS * 10240 / 2048 
 
 #define T_FICHERO 1             //inodo de tipo archivo
@@ -52,7 +51,6 @@ typedef struct {
   uint16_t tamano;                     /* Tamano actual del fichero en bytes */
   uint8_t bloqueDirecto[5];            /* Numero del bloque directo (desde bloque 0 a numBloquesDatos - 1) */
   uint32_t integridad;                 /* Numero para comprobar que el fichero no se ha corrompido;*/
-  //char relleno[PADDING_INODO];        /* Relleno para completar un bloque */
 } TipoInodo;
 
 TipoInodo inodos[MAX_FICHEROS];
